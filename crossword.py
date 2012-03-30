@@ -30,7 +30,7 @@ def get_words_of_length(x, word_list):
 
 def build_word_lists_by_length(word_list):
 	'''
-	Turns word_list into a list of lists of words of length 1-len(longest word)
+	Turns word_list into a list of lists of words of length '#'-len(longest word)
 	'''
 	word_lists_by_length = []
 	longest_word_length = max(len(stn) for stn in word_list)
@@ -90,13 +90,13 @@ def score_secret_sauce(words_available, length):
 def find_word(column_or_row, start_pos):
 	word = ''
 	for x in xrange(len(column_or_row)):
-		if column_or_row[x] == 1 and x < start_pos:
+		if column_or_row[x] == '#' and x < start_pos:
 			word = ''
-		elif column_or_row[x] == 1 and x > start_pos:
-			return len(word), word.strip('0')
+		elif column_or_row[x] == '#' and x > start_pos:
+			return len(word), word.strip(' ')
 		else: 
 			word += str(column_or_row[x])
-	return len(word), word.strip('0')
+	return len(word), word.strip(' ')
 
 def get_best_letters(board):
 	row_index,vert_index = get_coords(board)
@@ -119,27 +119,54 @@ def solve_board_recursive(board, solution_list):
 def solve_board(board):
 	solution_list = []
 	x= 0
+	y = 0
+	pos_list = []
 	while not board_solved(board):
 		if x%50 == 0:
-			print 'iteration: ', x 
+			print 'iteration: ', x
+			for hsh in solution_list:
+				if hsh.index(' ') > y:
+					y = hsh.index(' ')
+			print 'longest so far: ',y
 			print_board(board)
-		if tried_all(board,solution_list, get_best_letters(board)):
+		possible_letters = get_best_letters(board)
+		best_letters = []
+		for letter in possible_letters:
+			if hash_board_add_letter(board,letter) not in solution_list:
+				best_letters.append(letter)
+		if len(best_letters) > 1:
+			pos_list = add_board_to_pos_list(board,pos_list)
+			board_add_letter(board, best_letters[0])
+		elif len(best_letters) == 1:
+			board = board_add_letter(board,best_letters[0])
+		else:
 			solution_list = solution_list_add(board, solution_list)
-			board = board_decrement(board)	
-			#print 'tried all ',solution_list
-		board_increment_optimized(board,solution_list,get_best_letters(board))
+			board = last_good_pos(board,pos_list,solution_list)
+			del best_letters[:]
 		x+=1
-	return board
+	print_board(board)
+
+def last_good_pos(board,pos_list,solution_list):
+	for pos in reversed(pos_list):
+		if hash_board(pos) not in solution_list:
+			return pos
+
+def add_board_to_pos_list(board, pos_list):
+	container = []
+	for row in board:
+		container.append(row[:])
+	pos_list.append(container)
+	return pos_list
 
 def board_solved(board):
 	for row in board:
-		if 0 in row:
+		if ' ' in row:
 			return False
 	return True
 
 def get_coords(board):
 	for row in xrange(len(board)):
-		try: return row, board[row].index(0)
+		try: return row, board[row].index(' ')
 		except:pass
 
 def tried_all(board, solution_list,best_letters):
@@ -156,7 +183,7 @@ def board_decrement(board):
 	alpha = 'abcdefghijklmnopqrstuvwxyz'
 	for row in xrange(len(board)):
 		for letter in xrange(len(board[row])):
-			if board[row][letter] == 0:
+			if board[row][letter] == ' ':
 				board[last_good_point[0]][last_good_point[1]] = 0
 				return board
 			elif str(board[row][letter]) in alpha:
@@ -175,7 +202,7 @@ def hash_board(board):
 
 def hash_board_add_letter(board, letter):
 	hsh = hash_board(board)
-	indx = hsh.index('0')
+	indx = hsh.index(' ')
 	hsh = hsh[:indx]+str(letter)+hsh[indx+1:]
 	return hsh
 
@@ -214,11 +241,11 @@ RARITY_FACTOR = []
 for total in WORDS_PER_LENGTH:
 	RARITY_FACTOR.append(int(20000/total))
 
-BOARD = [[0,0,0,0,1,0,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,1,1],[0,0,0,1,0,0,0,1,0,0,0],[1,1,1,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0],[0,0,0,0,0,0,1,0,0,0,0]]
-BOARDO = [[0,0,0,1,0,0],[0,0,1,0,0,0],[1,0,0,0,1,0],[0,1,0,0,0,1],[0,0,0,1,0,0],[0,0,1,0,0,0]]
+BOARD = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
+BOARDO = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
 
-BOARDL = [['k',0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
-#print WORD_LISTS_BY_LENGTH[0]
+BOARDL = [[' ','a',' ',' '],['e',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
+#print WORD_LISTS_BY_LENGTH[' ']
 #print 'htoe' in WORD_LISTS_BY_LENGTH[3]
 TEST_LIST = []
 TEST = []
