@@ -1,5 +1,5 @@
 def file_to_list():
-	'''opens file 'words.txt' in containing folder and makes a list of the lines.'''
+	'''opens the file 'words.txt' in containing folder and makes a list of the lines.'''
 	text = open('words.txt', 'r')
 	word_list = []
 	for line in text:
