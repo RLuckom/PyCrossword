@@ -105,12 +105,15 @@ def solve_board(board):
 	x= 0
 	y = 0
 	pos_list = []
+	longest = ''
 	while not board_solved(board):
 		if x%50 == 0: # following lines are output for testing
 			print 'iteration: ', x
 			for hsh in solution_list:
 				if hsh.index(' ') > y:
 					y = hsh.index(' ')
+					longest = hsh
+			print longest
 			print 'longest so far: ',y
 			print_board(board)# end of section for printing output for testing
 		possible_letters = get_best_letters(board)
@@ -218,7 +221,7 @@ def print_board(board):
 		rowstring = '['
 		for item in row:
 			rowstring += " '"+str(item)+"' "
-		rowstring += ']'
+		rowstring += ']\n'
 		print rowstring
 
 WORD_LISTS_BY_LENGTH = build_word_lists_by_length(filter.filter_words(filter.file_to_list()))
@@ -236,12 +239,12 @@ for lst in WORD_LISTS_BY_LENGTH:
 RARITY_FACTOR = []
 
 for total in WORDS_PER_LENGTH:
-	RARITY_FACTOR.append(float(total)/float(WORD_TOTAL))
+	RARITY_FACTOR.append(1-(float(total)/float(WORD_TOTAL)))
 
 BOARD = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
 BOARDO = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
 
-BOARDL = [[' ','a',' ',' '],['e',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
+BOARDL = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
 #print WORD_LISTS_BY_LENGTH[' ']
 #print 'htoe' in WORD_LISTS_BY_LENGTH[3]
 TEST_LIST = []
