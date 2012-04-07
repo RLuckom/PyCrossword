@@ -51,7 +51,6 @@ def solve_board(board):
 
 #------------functions called directly by solve_board--------------------
 
-
 #checks to see if the board is solved.
 
 def board_solved(board):
@@ -70,6 +69,8 @@ def print_tests(board, solution_list, x):
 		if hsh.index(' ') > y:
 			y = hsh.index(' ')
 			longest = hsh
+	if x == 0:
+		print find_supernodes(board)
 	print 'iteration: ', x
 	print 'longest so far: ',y
 	print 'best board so far: ', longest
@@ -88,11 +89,8 @@ def get_possible_letters(board):
 	#chosen
 	horiz_len, horiz_string = find_word(board[row_index],vert_index)
 
-	#initializing an empty list and storing letters in the current
-	#column in it.
-	column = []
-	for row in board:
-		column.append(row[vert_index])
+	#using get_column to return the active column as a list.
+	column = get_column(board, vert_index)
 	
 	#using the column list to get the length of the vertical word
 	#and any letters already chosen
@@ -193,6 +191,14 @@ def print_board(board):
 		print rowstring
 
 
+#returns a list representing the column_number column
+
+def get_column(board, column_number):
+	column = []
+	for row in board:
+		column.append(row[column_number])
+	return column
+
 #----------------------functions to choose letters--------------------------
 
 #Checks to see whether this combo of strings and word lengths has been
@@ -224,9 +230,9 @@ def add_to_moves_list_dict(vert_string, horiz_string, vert_len, horiz_len):
 	MOVES_LIST_DICT[vert_string, horiz_string, vert_len, horiz_len] = to_return
 
 
-#Takes a string and scores each letter a-z based on how many words
-#of arg length can be made by adding the letter to the string. Returns 
-#dict of letter:score for a-z.
+#Checks to see whether this beginning word string and target word length
+#is already in WORDS_SHORTCUT_DICT. If so, returns it; if not, calls add_
+#to_words_shortcut_dict, then returns it
 
 def score_letters(s, length):
 	try: return WORDS_SHORTCUT_DICT[s,length]
@@ -282,6 +288,25 @@ def build_word_lists_by_length(word_list):
 	for x in xrange(1,longest_word_length + 1):
 		word_lists_by_length.append(get_words_of_length(x,word_list))
 	return word_lists_by_length
+
+#-----------------------test function area--------------------------
+
+#the next idea is to find the squares on the board where the longest words
+#meet, and try to add those words first. find_supernodes returns a sorted
+#list of the coordinates with the most important nodes first.
+
+def find_supernodes(board):
+	coordinate_values = []
+	for row in xrange(len(board)):
+		for column in xrange(len(board[row])):
+			if board[row][column] != '#':
+				current_column = get_column(board, column)
+				current_row = board[row]
+				coordinate_values.append(((find_word(current_column, row)[0] + find_word(current_row, column)[0]),(row,column)))
+	coordinate_values.sort(reverse=True)
+	for element in xrange(len(coordinate_values)):
+		coordinate_values[element] = coordinate_values[element][1]
+	return coordinate_values
 
 
 #----------------global variable declarations-----------------------
