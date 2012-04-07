@@ -71,6 +71,7 @@ def print_tests(board, solution_list, x):
 			longest = hsh
 	if x == 0:
 		print find_supernodes(board)
+		print check_against_word_list('  h   i')
 	print 'iteration: ', x
 	print 'longest so far: ',y
 	print 'best board so far: ', longest
@@ -308,6 +309,44 @@ def find_supernodes(board):
 		coordinate_values[element] = coordinate_values[element][1]
 	return coordinate_values
 
+
+#specialized version of find_word that returns the whole word, including 
+#whitespace, and its start and end positions in the row or column.
+
+def find_just_word(column_or_row, start_pos): 
+	word = ''
+	word_start = 0
+	for x in xrange(len(column_or_row)):
+		if column_or_row[x] == '#' and x < start_pos:
+			word = ''
+			word_start = x
+		elif column_or_row[x] == '#' and x > start_pos:
+			word_end = x
+			return word, (word_start, word_end)
+		else: 
+			word += str(column_or_row[x])
+	word_end = len(row) - 1
+	return word, (word_start, word_end)
+
+
+#takes a word-string, including whitespace, and returns a list of
+#words that it could become.
+
+def check_against_word_list(word):
+	valid_words = []
+	num_letters = len(word)
+	for mot in WORD_LISTS_BY_LENGTH[len(word)-1]:
+		same = True
+		for letter in xrange(num_letters):
+			if word[letter] != ' ':
+				if mot[letter] != word[letter]:
+					same = False
+		if same != False:
+			valid_words.append(mot)
+	return valid_words
+
+
+#
 
 #----------------global variable declarations-----------------------
 
