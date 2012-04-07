@@ -309,6 +309,16 @@ def find_supernodes(board):
 		coordinate_values[element] = coordinate_values[element][1]
 	return coordinate_values
 
+#pass in a board & coordinates, get back tuple in which both elements
+#are suited to call find intersecting words function.
+
+def coord_to_words_and_ranges(board, coord):
+	x_range = find_just_word(board[coord[0]],coord[1])
+	y_range = find_just_word(get_column(board, coord[1]),coord[0])
+	return (x_range, coord[1]),(coord[0],y_range)
+
+def test_add_horiz_word(c_to_w_r_x, board):
+	return	
 
 #specialized version of find_word that returns the whole word, including 
 #whitespace, and its start and end positions in the row or column.
@@ -319,9 +329,9 @@ def find_just_word(column_or_row, start_pos):
 	for x in xrange(len(column_or_row)):
 		if column_or_row[x] == '#' and x < start_pos:
 			word = ''
-			word_start = x
+			word_start = x+1
 		elif column_or_row[x] == '#' and x > start_pos:
-			word_end = x
+			word_end = x-1
 			return word, (word_start, word_end)
 		else: 
 			word += str(column_or_row[x])
@@ -346,7 +356,51 @@ def check_against_word_list(word):
 	return valid_words
 
 
-#
+#returns all the words that intersect a horizontal word
+
+def find_horiz_intersecting_words(x_range,y, board):
+	words = []
+	for letter in xrange(x_range[0],x_range[1]+1):
+		words.append(find_just_word(get_column(board, letter))[0],y)
+	return words
+
+
+#returns all the words that intersect a vertical word
+
+def find_vert_intersecting_words(x, y_range, board):
+	words = []
+	for letter in xrange(y_range[0],y_range[1]+1):
+		words.append(find_just_word(board[letter],x)[0])
+	return words
+
+
+#returns a cumulative score of the number of potential words that 
+#could be made from a list of partially-completed words. Returns 
+#zero if any of the partially-completed words cannot be made into words
+
+def score_word_list(word_list):
+	score = 0
+	for word in word_list:
+		pos_words =  len(check_against_word_list(word))
+		if pos_words == 0:
+			return 0
+		score += pos_words
+	return score
+
+
+#adds a horizontal word to the board
+
+def board_add_horiz_word(board, word,x_range,y):
+	for letter in xrange(x_range[0],x_range[1]+1):
+		board[y][letter] = word[letter]
+
+#adds a vertical word to the board
+
+def board_add_vert_word(board, word,x,y_range):
+	for letter in xrange(y_range[0],y_range[1]+1):
+		board[letter][x] = word[letter]
+
+
 
 #----------------global variable declarations-----------------------
 
