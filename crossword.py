@@ -59,7 +59,6 @@ def board_solved(board):
 			return False
 	return True
 
-
 #prints the state of the board & other indicators.
 
 def print_tests(board, solution_list, x):
@@ -69,9 +68,9 @@ def print_tests(board, solution_list, x):
 		if hsh.index(' ') > y:
 			y = hsh.index(' ')
 			longest = hsh
-	if x == 0:
-		print find_supernodes(board)
-		print check_against_word_list('  h   i')
+	#if x == 0:
+		#print find_supernodes(board)
+		#print check_against_word_list('  h   i')
 	print 'iteration: ', x
 	print 'longest so far: ',y
 	print 'best board so far: ', longest
@@ -89,14 +88,14 @@ def get_possible_letters(board):
 	#getting the length of the horizontal word and any letters already 
 	#chosen
 	horiz_len, horiz_string = find_word(board[row_index],vert_index)
-
+	
 	#using get_column to return the active column as a list.
 	column = get_column(board, vert_index)
 	
 	#using the column list to get the length of the vertical word
 	#and any letters already chosen
 	vert_len, vert_string = find_word(column, row_index)
-
+	
 	#passing the strings and target word lengths to the function
 	#that finds the possible letters.
 	return get_moves_list(vert_string,horiz_string,vert_len,horiz_len)
@@ -195,6 +194,7 @@ def print_board(board):
 #returns a list representing the column_number column
 
 def get_column(board, column_number):
+	#print 'board', board
 	column = []
 	for row in board:
 		column.append(row[column_number])
@@ -250,7 +250,7 @@ def add_to_words_shortcut_dict(s,length):
 	letter_scores = {}
 	candidate = ''
 	words = 0
-	for letter in 'abcdefghijklmnopqrstuvwxyz':
+	for letter in 'abcdefghijklmnopqrstuvwxyz'.upper():
 		words = 0
 		candidate = s + letter
 		for word in words_of_length:
@@ -290,7 +290,7 @@ def build_word_lists_by_length(word_list):
 		word_lists_by_length.append(get_words_of_length(x,word_list))
 	return word_lists_by_length
 
-#-----------------------test function area--------------------------
+#--------------------experimental function area--------------------------
 
 #the next idea is to find the squares on the board where the longest words
 #meet, and try to add those words first. find_supernodes returns a sorted
@@ -303,11 +303,215 @@ def find_supernodes(board):
 			if board[row][column] != '#':
 				current_column = get_column(board, column)
 				current_row = board[row]
-				coordinate_values.append(((find_word(current_column, row)[0] + find_word(current_row, column)[0]),(row,column)))
+				y_length = find_word(current_column, row)[0]
+				x_length =  find_word(current_row, column)[0]
+				if y_length > x_length:
+					directional = 'v'
+				else: directional = 'h'
+				coordinate_values.append(((y_length + x_length),(row,column),directional))
 	coordinate_values.sort(reverse=True)
 	for element in xrange(len(coordinate_values)):
-		coordinate_values[element] = coordinate_values[element][1]
+		coordinate_values[element] = coordinate_values[element][1],coordinate_values[element][2]
 	return coordinate_values
+
+
+
+def solve_board_use_your_words(board):
+	nodes_in_order = find_supernodes(board)
+	times = 0
+	solution_list = []
+	pos_list = []
+	ctr = 0
+	through_else = 0
+	test_output_frequency = 50
+	current_coordinate = nodes_in_order[0]
+	while not board_solved(board):
+		forward = True
+		#deciding whether to print output
+		coord_ranges = coord_to_words_and_ranges(board, current_coordinate[0])
+		if ctr%test_output_frequency == 0:
+			print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'prime')
+
+		#checking to see what the spin is
+		if current_coordinate[1] =='v':
+			y_possibilities = check_against_word_list(find_just_word(get_column(current_coordinate[0][1],board),board))
+			best_words = []
+			for words in y_possibilities:
+				if hash_board_add_vert_word(board, word,coord_ranges[1]) not in solution_list:
+					best_words.append(word)
+			#If there's more than one possible letter that hasn't been tried,
+			#add the best letter to the board AND save this position in pos_list
+			#so we can come back to it if we hit a dead end
+			if len(best_words) > 1:
+				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
+				board_add_vert_word(board, best_words[0],coord_ranges[1])
+
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'y len > 1')
+
+			#If there's only one possible letter that hasn't been tried, just add
+			#that letter to the board.
+			elif len(best_words) == 1:
+				board_add_vert_word(board, best_words[0],coord_ranges[1])
+			#If there are no possible letters that have not been tried, add this
+			#board to the list of previously-tried boards and return the board to 
+			#the last position in which there was a choice of more than one letter
+
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'y len == 1')
+			else:
+				solution_list_add(board, solution_list)
+				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
+				forward = False
+				through_else += 1
+				coord_ranges = coord_to_words_and_ranges(board, current_coordinate[0])
+
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'y-else')
+			del best_words [:]
+			x_possibilities = check_against_word_list(find_just_word(board[current_coordinate[0][0]]),board)
+			#print x_possibilities
+			for words in x_possibilities:
+				if hash_board_add_horiz_word(board, word, coord_ranges[0]) not in solution_list:
+					best_words.append(word)
+			#If there's more than one possible letter that hasn't been tried,
+			#add the best letter to the board AND save this position in pos_list
+			#so we can come back to it if we hit a dead end
+			if len(best_words) > 1:
+				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
+				board_add_horiz_word(board, x_possibilities[0],coord_ranges[0])
+
+			#If there's only one possible letter that hasn't been tried, just add
+			#that letter to the board.
+
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'yx > 1')
+			elif len(best_words) == 1:
+				board_add_vert_word(board, y_possibilities[0],coord_ranges[0])
+			#If there are no possible letters that have not been tried, add this
+			#board to the list of previously-tried boards and return the board to 
+			#the last position in which there was a choice of more than one letter
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'yx =1')
+			else:
+				solution_list_add(board, solution_list)
+				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
+
+				coord_ranges = coord_to_words_and_ranges(board, current_coordinate[0])
+				through_else += 1
+				forward = False
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'yx else')
+			del best_words [:]
+		else:
+			#print 'hi'
+			best_words = []
+			x_possibilities = check_against_word_list(find_just_word(board[current_coordinate[0][0]],coord_ranges[0][0][1][0])[0])
+			#print board[current_coordinate[0][0]]
+			#print x_possibilities
+			#print coord_ranges[0][0][1][0]
+			for words in x_possibilities:
+				if hash_board_add_horiz_word(board, words, coord_ranges[0]) not in solution_list:
+					best_words.append(words)
+			#If there's more than one possible letter that hasn't been tried,
+			#add the best letter to the board AND save this position in pos_list
+			#so we can come back to it if we hit a dead end
+			#if ctr ==1:
+			#	print best_words
+			#print_board(board)
+			if len(best_words) > 1:
+				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
+				board_add_horiz_word(board, best_words[0],coord_ranges[0])
+
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'x > 1')
+			#If there's only one possible letter that hasn't been tried, just add
+			#that letter to the board.
+			elif len(best_words) == 1:
+				board_add_horiz_word(board, best_words[0],coord_ranges[0])
+			#If there are no possible letters that have not been tried, add this
+			#board to the list of previously-tried boards and return the board to 
+			#the last position in which there was a choice of more than one letter
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'x = 1')
+			else:
+				solution_list_add(board, solution_list)
+				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
+				forward = False
+				coord_ranges = coord_to_words_and_ranges(board, current_coordinate[0])
+				through_else += 1
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'x else')
+			del best_words [:]
+			y_possibilities = check_against_word_list(find_just_word(get_column(board, current_coordinate[0][1]),coord_ranges[0][0][1][0])[0])
+			#print coord_ranges, 'c'
+			#print get_column(board,current_coordinate[0][1])
+			coord_ranges = coord_to_words_and_ranges(board, current_coordinate[0])
+			best_words = []
+			for words in y_possibilities:
+				if hash_board_add_vert_word(board, words,coord_ranges[1]) not in solution_list:
+					best_words.append(words)
+			#If there's more than one possible letter that hasn't been tried,
+			#add the best letter to the board AND save this position in pos_list
+			#so we can come back to it if we hit a dead end
+			if len(best_words) > 1:
+				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
+				board_add_vert_word(board, best_words[0],coord_ranges[1])
+
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'xy > 1')
+			#If there's only one possible letter that hasn't been tried, just add
+			#that letter to the board.
+			elif len(best_words) == 1:
+				board_add_vert_word(board, best_words[0],coord_ranges[1])
+			#If there are no possible letters that have not been tried, add this
+			#board to the list of previously-tried boards and return the board to 
+			#the last position in which there was a choice of more than one letter
+
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'xy =1')
+			else:
+				solution_list_add(board, solution_list)
+				through_else += 1
+				forward = False
+				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
+			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,coord_ranges, 'xy else')
+				coord_ranges = coord_to_words_and_ranges(board, current_coordinate[0])
+			del best_words [:]
+		ctr += 1
+		if forward == True:
+			current_coordinate = nodes_in_order[nodes_in_order.index(current_coordinate)+1] 
+			coord_ranges = coord_to_words_and_ranges(board, current_coordinate[0])
+
+def print_tests_new(board, solution_list, x,forward,through_else, current_coordinates,coord_ranges,sent_by):
+#	if board[4][3]=='A':
+	print sent_by
+	print 'iteration: ', x
+	print 'coords: ',current_coordinates
+	print 'coord_ranges: ',coord_ranges
+	print 'forward = ', forward
+	print 'through_else: ',through_else
+	print_board(board)
+	#print_board(board)
+
+
+def hash_board_add_horiz_word(board,word,x_range_and_y):
+	board_copy = get_board_copy(board)
+	board_add_horiz_word(board_copy, word,x_range_and_y)
+	return hash_board(board_copy)
+
+def hash_board_add_vert_word(board,word,x_and_range):
+	board_copy = get_board_copy(board)
+	board_add_vert_word(board_copy, word,x_and_range)
+	return hash_board(board_copy)
+				
+#Adds the current board to the list of previous boards for 
+#which there was a choice of more than one letter.
+
+def get_board_copy(board):
+	container = []
+	for row in board:
+		container.append(row[:])
+	return container
+
+def add_board_and_coords_to_pos_list(board,pos_list,current_coordinate):
+	board_copy = get_board_copy(board)
+	entry = [board_copy,current_coordinate]
+	pos_list.append(entry)
+
+def return_to_last_good_pos_and_coords(board,pos_list,solution_list):
+	for pos in reversed(pos_list):
+		if hash_board(pos[0]) not in solution_list:
+			return pos
 
 #pass in a board & coordinates, get back tuple in which both elements
 #are suited to call find intersecting words function.
@@ -315,10 +519,25 @@ def find_supernodes(board):
 def coord_to_words_and_ranges(board, coord):
 	x_range = find_just_word(board[coord[0]],coord[1])
 	y_range = find_just_word(get_column(board, coord[1]),coord[0])
-	return (x_range, coord[1]),(coord[0],y_range)
+	return (x_range, coord[0]),(coord[1],y_range)
 
-def test_add_horiz_word(c_to_w_r_x, board):
-	return	
+#tests the effect of adding a horizontal word to the board
+
+def test_add_horiz_word(c_to_w_r_x, word, board):
+	words = find_horiz_intersecting_words(c_to_w_r_x, board)
+	index_to_add_at = c_to_w_r_x[1] 
+	for test_word in words:
+		test_word = test_word[:index_to_add_at] + word[index_to_add_at] + test_word[index_to_add_at+1:]
+	return score_word_list(words)
+
+#tests the effect of adding a vertical word to the board
+
+def test_add_vert_word(c_to_w_r_y, word, board):
+	words = find_vert_intersecting_words(c_to_w_r_y, board)
+	index_to_add_at = c_to_w_r_y[0] 
+	for test_word in words:
+		test_word = test_word[:index_to_add_at] + word[index_to_add_at] + test_word[index_to_add_at+1:]
+	return score_word_list(words)
 
 #specialized version of find_word that returns the whole word, including 
 #whitespace, and its start and end positions in the row or column.
@@ -326,6 +545,7 @@ def test_add_horiz_word(c_to_w_r_x, board):
 def find_just_word(column_or_row, start_pos): 
 	word = ''
 	word_start = 0
+	word_end = len(column_or_row)-1
 	for x in xrange(len(column_or_row)):
 		if column_or_row[x] == '#' and x < start_pos:
 			word = ''
@@ -335,7 +555,6 @@ def find_just_word(column_or_row, start_pos):
 			return word, (word_start, word_end)
 		else: 
 			word += str(column_or_row[x])
-	word_end = len(row) - 1
 	return word, (word_start, word_end)
 
 
@@ -351,7 +570,7 @@ def check_against_word_list(word):
 			if word[letter] != ' ':
 				if mot[letter] != word[letter]:
 					same = False
-		if same != False:
+		if same == True:
 			valid_words.append(mot)
 	return valid_words
 
@@ -390,15 +609,27 @@ def score_word_list(word_list):
 
 #adds a horizontal word to the board
 
-def board_add_horiz_word(board, word,x_range,y):
+def board_add_horiz_word(board, word,x_range_and_y):	
+	y = x_range_and_y[1]
+	x_range = x_range_and_y[0][1]
+#	print 'y',y, 'x-range',x_range
+	indx = 0
 	for letter in xrange(x_range[0],x_range[1]+1):
-		board[y][letter] = word[letter]
+		#print letter
+		#print word
+		board[y][letter] = word[indx]
+		indx += 1
 
 #adds a vertical word to the board
 
-def board_add_vert_word(board, word,x,y_range):
+def board_add_vert_word(board, word,x_and_range):
+	x = x_and_range[0]
+	y_range = x_and_range[1][1]
+	#print 'real', x_and_range
+	indx = 0
 	for letter in xrange(y_range[0],y_range[1]+1):
-		board[letter][x] = word[letter]
+		board[letter][x] = word[indx]
+		indx += 1
 
 
 
@@ -452,7 +683,7 @@ for total in WORDS_PER_LENGTH:
 BOARD = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
 BOARDO = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
 
-BOARDL = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
+BOARDO = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
 
 #-------------------end global variable declarations-------------------
 
