@@ -1,7 +1,39 @@
 #--------------------------import statements-------------------------
 
 import filter
+#----------------------------Description----------------------------
+'''
+I've started thinking a new way about this problem. Before, I was 
+scoring individual letters, moving through the problem space a tiny bit
+at a time. I was trying a lot of words, but I wasn't trying a very wide
+variety of boards; instead, I was trying a lot of different boards
+that had the same first and second lines. For each letter I put down early,
+I spent a lot of time before I changed it, without any way fix it if 
+it became a problem.
 
+This time, I want to focus on eliminating as wide a variety of potential 
+boards as I can with as few letters as possible. That way I'll hopefully
+move across the problem space more quickly, and only explore solutions
+if they have a chance of success. 
+
+To do that, I've started out by prioritizing the squares on the board 
+based on the raw number of other blank squares in their horizontal
+and vertical words. It turns out that there are many ties (usually 
+multiples of four) but I haven't worried about that yet, because groups
+of four nodes with like scores tend to be situated on groups of four
+words arranged in a square at the center of the board, which is usually
+the highest-connected part of the moard.
+
+Basically, the idea is to take the nodes in order of 'importance' and 
+fill in their entire vertical and horizontal words, scoring them based on
+their effect on the board, as measured by the number of possible attaching
+words they leave open. Obviously, if the introduction of any word would
+make it impossible to form a valid attaching word, we can retreat from
+that position. My hope is that this scoring method, and the fact of the
+order of the nodes from highest importance to lowest importance, will
+tend to generate crashes for boards that would not have worked much more
+quickly than the previous algorithm.
+'''
 #--------------------------master function--------------------------
 
 def solve_board_use_your_words(board):
@@ -23,11 +55,9 @@ def solve_board_use_your_words(board):
 		forward = True
 
 
-		#The coord_ranges is probably a terrible idea. It has this format:
-		# (((horizontal_word,(position_of_first_letter_in_row,position_of_last_letter_in_row),row-number),
-		#(column-number,(vertical_word,(position_of_first_letter_in_column, position_of_last_letter_in_column)))))
-		#I don't think this is going to work until I come up with a better way to represent the location
-		#of the word.
+		#Some values we're going to need in a few places are the words associated with the coordinate
+		#and the locations of the words in their row/column. The coord_to_words_and_ranges function gets
+		#those values. 
 		x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 
 		#deciding whether to print output
@@ -58,9 +88,14 @@ def solve_board_use_your_words(board):
 					best_words.append(words)
 
 
-			#Observant humans might notice at this point that the words haven't actually
-			#been scored yet. I bet I would've noticed that too, if I hadn't been rushing.
-			#Anyway, that should go here.
+			#This is the current source of issues. I need to debug the functions meant to sort 
+			#the best_words list in place based on a scoring system. The plan is to add the words to a
+			#board and take the scores of the resulting several vertical/horizontal words
+			#This has the disadvantage that, along with the complexity, it locks in the most 
+			#important words on the board high up in the tree, where for large boards it will be
+			#infeasible to expect to find better choices if the first ones don't work. However, by
+			#forcing the program to fill in ALL the highly-connected nodes first, I hope that it will
+			#miniimize the number of letters per crash. Anyway, that should go here.
 			sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][0])
 
 
