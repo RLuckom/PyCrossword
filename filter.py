@@ -11,6 +11,7 @@ def filter_words(word_list):
 	fair_words = []
 	for word in word_list:
 		if word.isalpha():
-			fair_words.append(word.upper())
+			if word.islower():
+				fair_words.append(word.upper())
 	return fair_words
 

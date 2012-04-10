@@ -171,11 +171,12 @@ def solve_board_use_your_words(board):
 				if hash_board_add_horiz_word(board, words, current_coordinate[0][0], x_range) not in solution_list:
 					best_words.append(words)
 
-		#	print best_words
+		
+			#print best_words
 			#Again, this is where someone paying more attention would've scored
 			#the words.
 			sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][1])
-					
+			#print best_words	
 
 			#If there's more than one possible word for this row that hasn't 
 			#been tried, add the best word to the row AND save this position 
@@ -183,11 +184,11 @@ def solve_board_use_your_words(board):
 			if len(best_words) > 1:
 				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
 				board_add_horiz_word(board, words, current_coordinate[0][0], x_range)
-				print_board(board)
+				#print_board(board)
 
 			#If there's only one possible word that hasn't been tried in this row,
 			#just add that letter to the board.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
 			elif len(best_words) == 1:
 				board_add_horiz_word(board, words, current_coordinate[0][0], x_range)
 			
@@ -195,7 +196,7 @@ def solve_board_use_your_words(board):
 			#If there are no possible words that have not been tried in this row, add this
 			#board to the list of previously-tried boards and return the board to 
 			#the last position in which there was a choice of more than one letter
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -204,7 +205,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				forward = False
 
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
 			
 			#Clear the best_words list again to prepare for the next time.
 			#Not sure this is necessary, but I've seen lists do weird things
@@ -216,6 +217,7 @@ def solve_board_use_your_words(board):
 			#any letters there already.
 			y_possibilities = check_against_word_list(find_just_word(get_column(board, current_coordinate[0][1]),y_range)[0])
 			
+			#print y_possibilities
 
 			#looks through the possible words and adds those that haven't been tried 
 			#to best_words
@@ -223,12 +225,12 @@ def solve_board_use_your_words(board):
 				if hash_board_add_vert_word(board, words,current_coordinate[0][1],y_range) not in solution_list:
 					best_words.append(words)
 
-
+			#print best_words
 			#Observant humans might notice at this point that the words haven't actually
 			#been scored yet. I bet I would've noticed that too, if I hadn't been rushing.
 			#Anyway, that should go here.
 			sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][0])
-
+			print best_words
 			#If there's more than one possible word for this column that hasn't been tried,
 			#add the best word to the column AND save this position in pos_list
 			#so we can come back to it if we hit a dead end
@@ -238,7 +240,7 @@ def solve_board_use_your_words(board):
 			
 			#print strings such as the following have as their last element an indication of which 
 			#branch they come from, which is displayed for debugging.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
 
 			#If there's only one possible word that hasn't been tried in this column, just add
 			#that word to the column.
@@ -250,7 +252,7 @@ def solve_board_use_your_words(board):
 			#to the last position in which there was a choice of more than one word.
 			#AND sets forward to False so we don't increment the coordinate list at 
 			#the end of the loop.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -258,7 +260,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
 			
 
 			#This is the beginning of filling in the horizontal word. First we 
@@ -326,7 +328,6 @@ def print_tests_new(board, solution_list, x,forward,through_else, current_coordi
 	print 'forward = ', forward
 	print 'through_else: ',through_else
 	print_board(board)
-	#print_board(board)
 
 #takes a word-string, including whitespace, and returns a list of
 #words that it could become.
@@ -528,23 +529,26 @@ def sort_best_vert_words_by_score(best_words, board, y_range, x):
 #should test the effect of adding a horizontal word to the board.
 #currently not used and almost certainly broken
 def test_add_horiz_word(x_range,y, word, board):
-	words = find_horiz_intersecting_words(x_range,y, board)
+	words = find_vert_intersecting_words(x_range,y, board)
+	print words
 	index_to_add_at = y 
-#	print y, word, x_range
 	for test_word in xrange(len(words)):
-		words[test_word] = words[test_word][:index_to_add_at] + [word[test_word]] + words[test_word][index_to_add_at+1:]
+		#print words[test_word], word, word[test_word]
+		words[test_word] = words[test_word][:index_to_add_at] + word[test_word] + words[test_word][index_to_add_at+1:]
 	for test_word in words:
 		test_word = find_just_word(test_word,y)
+		print 'horiz test result: ',test_word
 	return score_word_list(words)
 
 
 #tests the effect of adding a vertical word to the board
 #currently not used and almost certainly broken
 def test_add_vert_word(y_range,x, word, board):
-	words = find_vert_intersecting_words(y_range,x, board)
+	words = find_horiz_intersecting_words(y_range,x, board)
 	index_to_add_at = x
 	for test_word in xrange(len(words)):
-		words[test_word] = words[test_word][:index_to_add_at] + [word[test_word]] + words[test_word][index_to_add_at+1:]
+		print words[test_word], word, word[test_word]
+		words[test_word] = words[test_word][:index_to_add_at] + word[test_word] + words[test_word][index_to_add_at+1:]
 	for test_word in words:
 		test_word = find_just_word(test_word,x)
 	return score_word_list(words)
@@ -552,19 +556,19 @@ def test_add_vert_word(y_range,x, word, board):
 
 #returns all the words that intersect a horizontal word
 #for all I know it might even work.
-def find_horiz_intersecting_words(x_range,y, board):
+def find_horiz_intersecting_words(y_range,x, board):
 	words = []
-	for letter in xrange(x_range[0],x_range[1]+1):
-		words.append(get_column(board, letter))
+	for letter in xrange(y_range[0],y_range[1]+1):
+		words.append(find_just_word(get_column(board, letter),x)[0])
 	return words
 
 
 #returns all the words that intersect a vertical word
 #For all I know it might even work.
-def find_vert_intersecting_words(x, y_range, board):
+def find_vert_intersecting_words(x_range, y, board):
 	words = []
-	for letter in xrange(y_range[0],y_range[1]+1):
-		words.append(find_just_word(board[letter],x)[0])
+	for letter in xrange(x_range[0],x_range[1]+1):
+		words.append(find_just_word(board[letter],y)[0])
 	return words
 
 
@@ -587,7 +591,7 @@ def score_word_list(word_list):
 #length 1, [1] consists of words of length 2, etc.
 
 WORD_LISTS_BY_LENGTH = build_word_lists_by_length(filter.filter_words(filter.file_to_list()))
-#del WORD_LISTS_BY_LENGTH[0][:] #the word list initially includes all single letters as words
+del WORD_LISTS_BY_LENGTH[0][:] #the word list initially includes all single letters as words
 WORD_LISTS_BY_LENGTH[0] = ['A','I','O']#replacing with just valid single-letter words.
 
 
