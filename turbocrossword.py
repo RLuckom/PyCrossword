@@ -44,7 +44,7 @@ def solve_board_use_your_words(board):
 	through_else = 0 #number of times a word has not been found. Used only for debugging
 	test_output_frequency = 50 #how often to print testing output
 	current_coordinate = nodes_in_order[0] #this gets managed inside the while loop later on
-	print WORD_LISTS_BY_LENGTH[0]
+	#print WORD_LISTS_BY_LENGTH[0]
 	#Main loop
 	while not board_solved(board):
 		
@@ -159,7 +159,7 @@ def solve_board_use_your_words(board):
 			#in pos_list so we can come back to it if we hit a dead end
 			if len(best_words) > 1:
 				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
-				board_add_horiz_word(board, best_words[0][0],x_range)
+				board_add_horiz_word(board, best_words[0],x_range)
 
 
 			#If there's only one possible word that hasn't been tried in this row,
@@ -220,20 +220,20 @@ def solve_board_use_your_words(board):
 			#in pos_list so we can come back to it if we hit a dead end
 			if len(best_words) > 1:
 				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
-				board_add_horiz_word(board, words, current_coordinate[0][0], x_range)
+				board_add_horiz_word(board, best_words[0], current_coordinate[0][0], x_range)
 				#print_board(board)
 
 			#If there's only one possible word that hasn't been tried in this row,
 			#just add that letter to the board.
-				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
+				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
 			elif len(best_words) == 1:
-				board_add_horiz_word(board, words, current_coordinate[0][0], x_range)
+				board_add_horiz_word(board, best_words[0], current_coordinate[0][0], x_range)
 			
 			
 			#If there are no possible words that have not been tried in this row, add this
 			#board to the list of previously-tried boards and return the board to 
 			#the last position in which there was a choice of more than one letter
-				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
+				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -242,7 +242,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				forward = False
 
-				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
+				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
 			
 			#Clear the best_words list again to prepare for the next time.
 			#Not sure this is necessary, but I've seen lists do weird things
@@ -267,7 +267,7 @@ def solve_board_use_your_words(board):
 			#been scored yet. I bet I would've noticed that too, if I hadn't been rushing.
 			#Anyway, that should go here.
 			sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][1])
-			print best_words
+			#print best_words
 			#If there's more than one possible word for this column that hasn't been tried,
 			#add the best word to the column AND save this position in pos_list
 			#so we can come back to it if we hit a dead end
@@ -277,7 +277,7 @@ def solve_board_use_your_words(board):
 			
 			#print strings such as the following have as their last element an indication of which 
 			#branch they come from, which is displayed for debugging.
-				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
+				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
 
 			#If there's only one possible word that hasn't been tried in this column, just add
 			#that word to the column.
@@ -289,7 +289,7 @@ def solve_board_use_your_words(board):
 			#to the last position in which there was a choice of more than one word.
 			#AND sets forward to False so we don't increment the coordinate list at 
 			#the end of the loop.
-				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
+				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -297,7 +297,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 
-				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
+				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
 			
 
 			#This is the beginning of filling in the horizontal word. First we 
@@ -308,7 +308,7 @@ def solve_board_use_your_words(board):
 		if forward == True:
 			current_coordinate = nodes_in_order[nodes_in_order.index(current_coordinate)+1] 
 			x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
-
+	print_board(board)
 
 
 #------------------functions called directly by master----------------
@@ -545,13 +545,16 @@ def build_word_lists_by_length(word_list):
 def sort_best_horiz_words_by_score(best_words, board, x_range, y):
 	words = []
 	for word in best_words:
+		#print 'word: ', word, 'score: ', test_add_horiz_word(x_range,y,word,board)
 		words.append([test_add_horiz_word(x_range,y,word,board),word])
 		if words[-1][0] == 0:
 			words.pop()
 	words.sort(reverse=True)
+	#print words
 	del best_words[:]
 	for x in words:
 		best_words.append(x[1])
+	#print best_words
 
 
 #supposed to filter and sort the best_words list in place
@@ -582,7 +585,6 @@ def test_add_horiz_word(x_range,y, word, board):
 	for test_word in words:
 		to_score.append(find_just_word(test_word,y)[0])
 	#print words
-	#print 'horiz test result: ',test_word
 	return score_word_list(to_score)
 
 
@@ -680,9 +682,9 @@ for total in WORDS_PER_LENGTH:
 #several test boards. the board currently named BOARD is the board used
 
 BOARDO = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
-BOARD = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
+BOARDO = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
 
-BOARDO = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
+BOARD = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
 
 #-------------------end global variable declarations-------------------
 
