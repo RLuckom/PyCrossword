@@ -42,9 +42,8 @@ def solve_board_use_your_words(board):
 	pos_list = []   #list of boards representing positions where there was a choice of adding several words
 	ctr = 0 #number of times through the loop
 	through_else = 0 #number of times a word has not been found. Used only for debugging
-	test_output_frequency = 50 #how often to print testing output
+	test_output_frequency = 1 #how often to print testing output
 	current_coordinate = nodes_in_order[0] #this gets managed inside the while loop later on
-	#print WORD_LISTS_BY_LENGTH[0]
 	#Main loop
 	while not board_solved(board):
 		
@@ -67,7 +66,7 @@ def solve_board_use_your_words(board):
 
 		#Each coordinate is in the form ((x-coord,y-coord), v-or-h) where the v or h indicates
 		#whether to start with the vertical or horizontal word based on which is longer. I've written out
-		#two full loops to handle both cases. Also probably a terrible idea, as I have to remember to 
+		#two full branches to handle both cases. That might have been a terrible idea, as I have to remember to 
 		#fix bugs in both places.
 		if current_coordinate[1] =='v':
 
@@ -119,7 +118,7 @@ def solve_board_use_your_words(board):
 			#If there are no possible words that have not been tried for this column, add this
 			#board to the list of previously-tried boards and return the board and current_coordinate
 			#to the last position in which there was a choice of more than one word.
-			#AND sets forward to False so we don't increment the coordinate list at 
+			#AND set forward to False so we don't increment the coordinate list at 
 			#the end of the loop.
 			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
 			else:
@@ -159,7 +158,7 @@ def solve_board_use_your_words(board):
 			#in pos_list so we can come back to it if we hit a dead end
 			if len(best_words) > 1:
 				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate)
-				board_add_horiz_word(board, best_words[0],x_range)
+				board_add_horiz_word(board, best_words[0],current_coordinate[0][0], x_range)
 
 
 			#If there's only one possible word that hasn't been tried in this row,
@@ -682,9 +681,9 @@ for total in WORDS_PER_LENGTH:
 #several test boards. the board currently named BOARD is the board used
 
 BOARDO = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
-BOARDO = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
+BOARD = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
 
-BOARD = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
+BOARDO = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
 
 #-------------------end global variable declarations-------------------
 
