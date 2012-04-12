@@ -77,7 +77,7 @@ def solve_board_use_your_words(board):
 
 			#this gets a list of words that could be added to the current column without disturbing
 			#any letters there already.
-			y_possibilities = check_against_word_list(find_just_word(get_column(board, current_coordinate[0][1]),y_range[0]))
+			y_possibilities = check_against_word_list(find_word_and_range(get_column(board, current_coordinate[0][1]),y_range[0]))
 			
 
 			#looks through the possible words and adds those that haven't been tried 
@@ -138,7 +138,7 @@ def solve_board_use_your_words(board):
 			
 			#finding words that could be placed in the current row without 
 			#disturbing the letters already there.
-			x_possibilities = check_against_word_list(find_just_word(board[current_coordinate[0][0]],x_range[0]))
+			x_possibilities = check_against_word_list(find_word_and_range(board[current_coordinate[0][0]],x_range[0]))
 			
 			
 			#Checking the words in the list of possibilities to see if they've
@@ -196,7 +196,7 @@ def solve_board_use_your_words(board):
 
 			#finding words that could be placed in the current row without 
 			#disturbing the letters already there.
-			x_possibilities = check_against_word_list(find_just_word(board[current_coordinate[0][0]],x_range[0])[0])
+			x_possibilities = check_against_word_list(find_word_and_range(board[current_coordinate[0][0]],x_range[0])[0])
 			
 		#print x_possibilities
 		#print current_coordinate
@@ -251,7 +251,7 @@ def solve_board_use_your_words(board):
 
 			#this gets a list of words that could be added to the current column without disturbing
 			#any letters there already.
-			y_possibilities = check_against_word_list(find_just_word(get_column(board, current_coordinate[0][1]),y_range[0])[0])
+			y_possibilities = check_against_word_list(find_word_and_range(get_column(board, current_coordinate[0][1]),y_range[0])[0])
 			
 			#print y_possibilities
 
@@ -313,12 +313,9 @@ def solve_board_use_your_words(board):
 #------------------functions called directly by master----------------
 
 
-# returns a sorted list of the coordinates with the 
-#most important nodes first and an 'h' or 'v' next to 
-#indicate whether the longer word off the node is the
-#horizontal or vertical one. defaults to h in a tie.
 
 def find_supernodes(board):
+	"""returns a sorted list of the coordinates with the most important nodes first and an 'h' or 'v' next to indicate whether the longer word off the node is the horizontal or vertical one. defaults to h in a tie."""
 	coordinate_values = []
 	for row in xrange(len(board)):
 		for column in xrange(len(board[row])):
@@ -337,25 +334,23 @@ def find_supernodes(board):
 	return coordinate_values
 
 
-#checks to see if the board is solved.
 def board_solved(board):
+	"""checks to see if the board is solved."""
 	for row in board:
 		if ' ' in row:
 			return False
 	return True
 
 
-#This returns words and ranges. It is called by solve_board_u_y_w
-#its outputs should be correct to pass to the find intersecting words
-#functions, but nothing else about it really works so why should that?
 def coord_to_words_and_ranges(board, coord):
-	x_word, x_range = find_just_word(board[coord[0]],coord[1])
-	y_word, y_range = find_just_word(get_column(board, coord[1]),coord[0])
+	"""Takes a board and coord and returns x_word, x_range, y_word, y_range"""
+	x_word, x_range = find_word_and_range(board[coord[0]],coord[1])
+	y_word, y_range = find_word_and_range(get_column(board, coord[1]),coord[0])
 	return x_word,x_range,y_word,y_range
 
 
-#This function collects the tests to output for debugging
 def print_tests_new(board, solution_list, x,forward,through_else, current_coordinates,sent_by):
+	"""prints args for debugging"""
 #	if board[4][3]=='A':
 	print sent_by
 	print 'iteration: ', x
@@ -365,9 +360,8 @@ def print_tests_new(board, solution_list, x,forward,through_else, current_coordi
 	print 'through_else: ',through_else
 	print_board(board)
 
-#takes a word-string, including whitespace, and returns a list of
-#words that it could become.
 def check_against_word_list(word):
+	"""takes a word-string, including whitespace, and returns a list of words that it could become."""
 	#print 'word ', word
 	valid_words = []
 	num_letters = len(word)
@@ -383,9 +377,8 @@ def check_against_word_list(word):
 	return valid_words
 
 
-#returns the whole word, including whitespace, and its start 
-#and end positions in the row or column.
-def find_just_word(column_or_row, start_pos): 
+def find_word_and_range(column_or_row, start_pos): 
+	"""returns the whole word, including whitespace, and its start and end positions in the row or column."""
 	word = ''
 	word_start = 0
 	word_end = len(column_or_row)-1
@@ -403,8 +396,8 @@ def find_just_word(column_or_row, start_pos):
 	return word, (word_start, word_end)
 
 
-#returns a list representing the column_number column
 def get_column(board, column_number):
+	"""returns a list representing the column_number column"""
 	#print 'board', board
 	column = []
 	for row in board:
@@ -412,32 +405,29 @@ def get_column(board, column_number):
 	return column
 
 
-#adds a vertical word to a copy of the board using the 1st
-#element of coord_ranges
 def hash_board_add_vert_word(board,word,column_number,range_within_column):
+	"""adds a vertical word to a copy of the board using the 1st element of coord_ranges"""
 	board_copy = get_board_copy(board)
 	board_add_vert_word(board_copy, word,column_number,range_within_column)
 	return hash_board(board_copy)
 
 
-#this function adds a horizontal word to a copy of the board using the 0th
-#element of coord_ranges
 def hash_board_add_horiz_word(board,word,row_number,range_within_row):
+	"""this function adds a horizontal word to a copy of the board using the 0th element of coord_ranges"""
 	board_copy = get_board_copy(board)
 	board_add_horiz_word(board_copy, word,row_number,range_within_row)
 	return hash_board(board_copy)
 
 
-#Adds the current board to the list of previous boards for 
-#which there was a choice of more than one letter.
 def add_board_and_coords_to_pos_list(board,pos_list,current_coordinate):
+	"""Adds the current board to the list of previous boards for which there was a choice of more than one letter."""
 	board_copy = get_board_copy(board)
 	entry = [board_copy,current_coordinate]
 	pos_list.append(entry)
 
 
-#adds a horizontal word to the board
 def board_add_horiz_word(board, word,y_coord,x_range):	
+	"""adds a horizontal word to the board"""
 	indx = 0
 	for letter in xrange(x_range[0],x_range[1]+1):
 		#print letter
@@ -448,22 +438,21 @@ def board_add_horiz_word(board, word,y_coord,x_range):
 		indx += 1
 
 
-#adds a vertical word to the board
 def board_add_vert_word(board, word,x,y_range):
+	"""adds a vertical word to the board"""
 	indx = 0
 	for letter in xrange(y_range[0],y_range[1]+1):
 		board[letter][x] = word[indx]
 		indx += 1
 
 
-#Adds the board to solution_list, which tracks boards that have been tried
 def solution_list_add(board, solution_list):
+	"""Adds the board to solution_list, which tracks boards that have been tried"""
 	solution_list.append(hash_board(board))
 
 
-#returns the (board,current_coordinate) from the last position in which
-#there was a choice of more than one word.
 def return_to_last_good_pos_and_coords(board,pos_list,solution_list):
+	"""returns the (board,current_coordinate) from the last position in which there was a choice of more than one word."""
 	for pos in reversed(pos_list):
 		if hash_board(pos[0]) not in solution_list:
 			return pos
@@ -472,10 +461,9 @@ def return_to_last_good_pos_and_coords(board,pos_list,solution_list):
 #---------------functions to navigate & comprehend the board-------------
 
 
-#returns a string representation of the board. Used for keeping track of boards 
-#that have been tried.
 
 def hash_board(board):
+	"""returns a string representation of the board. Used for keeping track of boards that have been tried."""
 	hsh = ''
 	for row in board:
 		for letter in row:
@@ -483,9 +471,9 @@ def hash_board(board):
 	return hsh
 
 
-#prints board to stdout
 
 def print_board(board):
+	"""prints board to stdout"""
 	rowstring = ''
 	for row in board:
 		rowstring = '['
@@ -495,10 +483,9 @@ def print_board(board):
 		print rowstring
 
 
-#returns the length and string of the word so far from a list representing the 
-#current column or row
 
 def find_word(column_or_row, start_pos):
+	"""returns the length and string of the word so far from a list representing the current column or row word = ''"""
 	word = ''
 	for x in xrange(len(column_or_row)):
 		if column_or_row[x] == '#' and x < start_pos:
@@ -510,9 +497,8 @@ def find_word(column_or_row, start_pos):
 	return len(word), word.strip(' ')
 
 
-#returns a copy of the board to functions I don't trust not to 
-#have side effects
 def get_board_copy(board):
+	"""returns a copy of the board to functions that have side effects"""
 	container = []
 	for row in board:
 		container.append(row[:])
@@ -520,8 +506,8 @@ def get_board_copy(board):
 
 #----------------helper functions for building word lists-----------------
 
-#takes list of words, returns list of words_of_length_x from original list.
 def get_words_of_length(x, word_list):
+	"""takes list of words, returns list of words_of_length_x from original list."""
 	words_of_length = []
 	for word in word_list:
 		if len(word) == x:
@@ -529,9 +515,8 @@ def get_words_of_length(x, word_list):
 	return words_of_length
 
 
-#Turns word_list into a list of lists of words of length 
-#'#'-len(longest word)
 def build_word_lists_by_length(word_list):
+	"""Turns word_list into a list of lists of words of length '#'-len(longest word)"""
 	word_lists_by_length = []
 	longest_word_length = max(len(stn) for stn in word_list)
 	for x in xrange(1,longest_word_length + 1):
@@ -540,8 +525,8 @@ def build_word_lists_by_length(word_list):
 
 #--------------------experimental function area--------------------------
 
-#supposed to filter and sort the best_words list in place
 def sort_best_horiz_words_by_score(best_words, board, x_range, y):
+	"""supposed to filter and sort the best_words list in place"""
 	words = []
 	for word in best_words:
 		#print 'word: ', word, 'score: ', test_add_horiz_word(x_range,y,word,board)
@@ -556,8 +541,8 @@ def sort_best_horiz_words_by_score(best_words, board, x_range, y):
 	#print best_words
 
 
-#supposed to filter and sort the best_words list in place
 def sort_best_vert_words_by_score(best_words, board, y_range, x):
+	"""filters and sorts the best_words list in place"""
 	words = []	
 	for word in best_words:
 		words.append([test_add_vert_word(y_range,x,word,board),word])
@@ -569,12 +554,8 @@ def sort_best_vert_words_by_score(best_words, board, y_range, x):
 		best_words.append(x[1])
 
 
-#This takes a word, adds it to a copy of the board, finds the 
-#strings representing vertical intersecting words, and 
-#checks to see how many valid words those could be made into.
-#score_word_list returns 0 if any of the intersecting
-#strings cannot be turned into valid words
 def test_add_horiz_word(x_range,y, word, board):
+	"""Takes a word, adds it (in a horizontal word) to a copy of the board, finds the strings representing vertical intersecting words, and checks to see how many valid words those could be made into. score_word_list returns 0 if any of the intersecting strings cannot be turned into valid words."""
 	words = find_horiz_intersecting_words(x_range,y, board)
 	index_to_add_at = y
 	to_score = []
@@ -582,14 +563,13 @@ def test_add_horiz_word(x_range,y, word, board):
 		#print words[test_word], word, word[test_word]
 		words[test_word][index_to_add_at] = word[test_word]
 	for test_word in words:
-		to_score.append(find_just_word(test_word,y)[0])
+		to_score.append(find_word_and_range(test_word,y)[0])
 	#print words
 	return score_word_list(to_score)
 
 
-#tests the effect of adding a vertical word to the board
-#currently not used and almost certainly broken
 def test_add_vert_word(y_range,x, word, board):
+	"""Takes a word, adds it (in a vertical word)to a copy of the board, finds the strings representing vertical intersecting words, and checks to see how many valid words those could be made into. score_word_list returns 0 if any of the intersecting strings cannot be turned into valid words."""
 	words = find_vert_intersecting_words(y_range,x, board)
 	index_to_add_at = x
 	to_score = []
@@ -597,33 +577,28 @@ def test_add_vert_word(y_range,x, word, board):
 	#print words[test_word], word, word[test_word]
 		words[test_word][index_to_add_at] = word[test_word]
 	for test_word in words:
-		to_score.append(find_just_word(test_word,x)[0])
+		to_score.append(find_word_and_range(test_word,x)[0])
 	return score_word_list(to_score)
 
 
-#returns all the words that intersect a horizontal word
-#for all I know it might even work.
 def find_horiz_intersecting_words(x_range,y, board):
+	"""returns all the words that intersect a horizontal word."""
 	words = []
 	for letter in xrange(x_range[0],x_range[1]+1):
 		words.append(get_column(board, letter))
 	return words
 
 
-#returns all the words that intersect a vertical word
-#For all I know it might even work.
 def find_vert_intersecting_words(y_range, x, board):
+	"""returns all the words that intersect a vertical word."""
 	words = []
 	for letter in xrange(y_range[0],y_range[1]+1):
 		words.append(board[letter])
 	return words
 
 
-#returns a cumulative score of the number of potential words that 
-#could be made from a list of partially-completed words. Returns 
-#zero if any of the partially-completed words cannot be made into words
-#Not currently used.
 def score_word_list(word_list):
+	"""returns a cumulative score of the number of potential words that could be made from a list of partially-completed words. Returns zero if any of the partially-completed words cannot be made into words."""
 	score = 0
 	for word in word_list:
 		pos_words =  len(check_against_word_list(word))

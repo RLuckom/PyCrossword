@@ -1,8 +1,8 @@
 import filter
 
-#master function for solving a given board
 
 def solve_board(board):
+	"""Takes a crossword board (a list of lists, each list representing a row, each element of each list being either ' ', a blank, or '#', a blocked square) and tries to return a board filled in with valid words. Takes an exceptionally long time for boards > ~7 square"""
 	solution_list = [] #list of previously-tried boards as str representations
 	x= 0 #keeps track of # of times through loop
 	pos_list = [] #list of previous boards in which there was a choice of adding more than one letter
@@ -51,36 +51,32 @@ def solve_board(board):
 
 #------------functions called directly by solve_board--------------------
 
-#checks to see if the board is solved.
 
 def board_solved(board):
+	"""checks to see if the board is solved."""
 	for row in board:
 		if ' ' in row:
 			return False
 	return True
 
-#prints the state of the board & other indicators.
 
 def print_tests(board, solution_list, x):
+	"""prints the state of the board & other indicators."""
 	longest = ''
 	y = 0
 	for hsh in solution_list:
 		if hsh.index(' ') > y:
 			y = hsh.index(' ')
 			longest = hsh
-	#if x == 0:
-		#print find_supernodes(board)
-		#print check_against_word_list('  h   i')
 	print 'iteration: ', x
 	print 'longest so far: ',y
 	print 'best board so far: ', longest
 	print_board(board)
 
 
-#wrapper function for returning a list of possible moves for a particular 
-#board position in the form [a,b,c] such that the best letter is in position[0]
 
 def get_possible_letters(board):
+	"""wrapper function for returning a list of possible moves for a particular board position in the form [a,b,c] such that the best letter is in position[0]"""
 	
 	#getting the coordinates of the active letter
 	row_index,vert_index = get_coords(board)
@@ -101,44 +97,41 @@ def get_possible_letters(board):
 	return get_moves_list(vert_string,horiz_string,vert_len,horiz_len)
 
 
-#returns a string representation of the board with letter added in 
-#the first empty space. Used to check whether board + letter would result
-#in a previously-tried board.
 
 def hash_board_add_letter(board, letter):
+	"""returns a string representation of the board with letter added in the first empty space. Used to check whether board + letter would result in a previously-tried board."""
 	hsh = hash_board(board)
 	indx = hsh.index(' ')
 	hsh = hsh[:indx]+str(letter)+hsh[indx+1:]
 	return hsh
 
 
-#Adds the current board to the list of previous boards for 
-#which there was a choice of more than one letter.
 
 def add_board_to_pos_list(board, pos_list):
+	"""Adds the current board to the list of previous boards for which there was a choice of more than one letter."""
 	container = []
 	for row in board:
 		container.append(row[:])
 	pos_list.append(container)
 
 
-#returns board with letter in next open space
 
 def board_add_letter(board, letter):
+	"""returns board with letter in next open space"""
 	x,y = get_coords(board)
 	board[x][y] = letter
 
 
-#Adds the board to solution_list, which tracks boards that have been tried
 
 def solution_list_add(board, solution_list):
+	"""Adds the board to solution_list, which tracks boards that have been tried"""
 	solution_list.append(hash_board(board))
 
 
-#returns the last board configuration in which there was a choice 
-#of more than one letter.
 
 def return_to_last_good_pos(board,pos_list,solution_list):
+	"""returns the last board configuration in which there was a choice 
+	of more than one letter."""
 	for pos in reversed(pos_list):
 		if hash_board(pos) not in solution_list:
 			return pos
@@ -146,18 +139,17 @@ def return_to_last_good_pos(board,pos_list,solution_list):
 
 #-------------functions to navigate and comprehend the board----------------
 
-#returns tuple (x,y) of the coordinates of the first empty position on board.
 
 def get_coords(board):
+	"""returns tuple (x,y) of the coordinates of the first empty position on board."""
 	for row in xrange(len(board)):
 		try: return row, board[row].index(' ')
 		except:pass
 
 
-#returns a string representation of the board. Used for keeping track of boards 
-#that have been tried.
 
 def hash_board(board):
+	"""returns a string representation of the board. Used for keeping track of boards that have been tried."""
 	hsh = ''
 	for row in board:
 		for letter in row:
@@ -165,10 +157,9 @@ def hash_board(board):
 	return hsh
 
 
-#returns the length and string of the word so far from a list representing the 
-#current column or row
 
 def find_word(column_or_row, start_pos):
+	"""returns the length and string of the word so far from a list representing the current column or row"""
 	word = ''
 	for x in xrange(len(column_or_row)):
 		if column_or_row[x] == '#' and x < start_pos:
@@ -179,9 +170,9 @@ def find_word(column_or_row, start_pos):
 			word += str(column_or_row[x])
 	return len(word), word.strip(' ')
 
-#prints board to stdout
 
 def print_board(board):
+	"""prints board to stdout"""
 	rowstring = ''
 	for row in board:
 		rowstring = '['
@@ -191,9 +182,9 @@ def print_board(board):
 		print rowstring
 
 
-#returns a list representing the column_number column
 
 def get_column(board, column_number):
+	"""returns a list representing the column_number column"""
 	#print 'board', board
 	column = []
 	for row in board:
@@ -202,22 +193,18 @@ def get_column(board, column_number):
 
 #----------------------functions to choose letters--------------------------
 
-#Checks to see whether this combo of strings and word lengths has been
-#seen before. If yes, returns moves list from MOVES_LIST_DICT. If not, 
-#adds it to MOVES_LIST_DICT and returns it.
 
 def get_moves_list(vert_string, horiz_string, vert_len, horiz_len):
+	"""Checks to see whether this combo of strings and word lengths has been seen before. If yes, returns moves list from MOVES_LIST_DICT. If not, adds it to MOVES_LIST_DICT and returns it."""
 	try: return MOVES_LIST_DICT[vert_string, horiz_string, vert_len, horiz_len]
 	except KeyError:
 		add_to_moves_list_dict(vert_string, horiz_string, vert_len, horiz_len)
 		return MOVES_LIST_DICT[vert_string, horiz_string, vert_len, horiz_len]
 
 
-#Gets two dicts of letters(a-z):score representing the across and down word
-#possibilities, returns a sorted list hopefully with the best letters first. 
-#Needs work.
 
 def add_to_moves_list_dict(vert_string, horiz_string, vert_len, horiz_len):
+	"""Gets two dicts of letters(a-z):score representing the across and down word possibilities, returns a sorted list hopefully with the best letters first. Needs work."""
 	vert_dict = score_letters(vert_string, vert_len)
 	horiz_dict = score_letters(horiz_string, horiz_len)
 	moves_list = []
@@ -231,21 +218,18 @@ def add_to_moves_list_dict(vert_string, horiz_string, vert_len, horiz_len):
 	MOVES_LIST_DICT[vert_string, horiz_string, vert_len, horiz_len] = to_return
 
 
-#Checks to see whether this beginning word string and target word length
-#is already in WORDS_SHORTCUT_DICT. If so, returns it; if not, calls add_
-#to_words_shortcut_dict, then returns it
 
 def score_letters(s, length):
+	"""Checks to see whether this beginning word string and target word length is already in WORDS_SHORTCUT_DICT. If so, returns it; if not, calls add_to_words_shortcut_dict, then returns it"""
 	try: return WORDS_SHORTCUT_DICT[s,length]
 	except KeyError: 
 		add_to_words_shortcut_dict(s,length)
 		return WORDS_SHORTCUT_DICT[s,length]
 
 
-#adds a dict of letter(a-z):score to the WORDS_SHORTCUT_DICT for an 
-#existing-string/word-length pair.
 
 def add_to_words_shortcut_dict(s,length):
+	"""adds a dict of letter(a-z):score to the WORDS_SHORTCUT_DICT for an existing-string/word-length pair."""
 	words_of_length = WORD_LISTS_BY_LENGTH[length - 1]
 	letter_scores = {}
 	candidate = ''
@@ -260,19 +244,18 @@ def add_to_words_shortcut_dict(s,length):
 	WORDS_SHORTCUT_DICT[s,length] = letter_scores
 
 
-#multiplies the score by proportion (total_words_of_length):(total_words) 
-#Generally a function for testing scoring methods.
 
 def score_secret_sauce(words_available, length):
+	"""multiplies the score by proportion (total_words_of_length):(total_words) Generally a function for testing scoring methods."""
 	score = words_available * RARITY_FACTOR[length - 1]
 	return score
 
 
 #----------------helper functions for building word lists-----------------
 
-#takes list of words, returns list of words_of_length_x from original list.
 
 def get_words_of_length(x, word_list):
+	"""takes list of words, returns list of words_of_length_x from original list."""
 	words_of_length = []
 	for word in word_list:
 		if len(word) == x:
@@ -280,10 +263,10 @@ def get_words_of_length(x, word_list):
 	return words_of_length
 
 
-#Turns word_list into a list of lists of words of length 
-#'#'-len(longest word)
 
 def build_word_lists_by_length(word_list):
+	"""Turns word_list into a list of lists of words of length 
+	'#'-len(longest word)"""
 	word_lists_by_length = []
 	longest_word_length = max(len(stn) for stn in word_list)
 	for x in xrange(1,longest_word_length + 1):
@@ -311,7 +294,7 @@ WORD_LISTS_BY_LENGTH[0] = ['A','I','O']#replacing with just valid single-letter 
 WORDS_SHORTCUT_DICT = {}
 
 
-#dict with entries in the form
+#dict with entries in the form:
 #[vert_beginning_word_str, horiz_beginning_word_str, vert_target_word_length, horiz_target_word_length]:
 #{letters_a-z:scores_of_letters}
 #similar to WORDS_SHORTCUT_DICT, but keeps track of combinations of across and vertical
