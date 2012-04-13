@@ -77,7 +77,7 @@ def solve_board_use_your_words(board):
 
 			#this gets a list of words that could be added to the current column without disturbing
 			#any letters there already.
-			y_possibilities = check_against_word_list(find_word_and_range(get_column(board, current_coordinate[0][1]),y_range[0]))
+			y_possibilities = check_against_word_list(find_word_and_range(get_column(board, current_coordinate[0][1]),y_range[0])[0])
 			
 
 			#looks through the possible words and adds those that haven't been tried 
@@ -108,7 +108,7 @@ def solve_board_use_your_words(board):
 			
 			#print strings such as the following have as their last element an indication of which 
 			#branch they come from, which is displayed for debugging.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
 
 			#If there's only one possible word that hasn't been tried in this column, just add
 			#that word to the column.
@@ -120,7 +120,7 @@ def solve_board_use_your_words(board):
 			#to the last position in which there was a choice of more than one word.
 			#AND set forward to False so we don't increment the coordinate list at 
 			#the end of the loop.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -128,7 +128,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
 			
 
 			#This is the beginning of filling in the horizontal word. First we 
@@ -138,7 +138,7 @@ def solve_board_use_your_words(board):
 			
 			#finding words that could be placed in the current row without 
 			#disturbing the letters already there.
-			x_possibilities = check_against_word_list(find_word_and_range(board[current_coordinate[0][0]],x_range[0]))
+			x_possibilities = check_against_word_list(find_word_and_range(board[current_coordinate[0][0]],x_range[0])[0])
 			
 			
 			#Checking the words in the list of possibilities to see if they've
@@ -163,7 +163,7 @@ def solve_board_use_your_words(board):
 
 			#If there's only one possible word that hasn't been tried in this row,
 			#just add that letter to the board.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
 			elif len(best_words) == 1:
 				board_add_horiz_word(board, best_words[0],current_coordinate[0][0], x_range)
 		
@@ -171,7 +171,7 @@ def solve_board_use_your_words(board):
 			#If there are no possible words that have not been tried in this row, add this
 			#board to the list of previously-tried boards and return the board to 
 			#the last position in which there was a choice of more than one letter
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -179,7 +179,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				forward = False
 
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
 			
 			#Clear the best_words list again to prepare for the next time.
 			#Not sure this is necessary, but I've seen lists do weird things
@@ -198,7 +198,7 @@ def solve_board_use_your_words(board):
 			#disturbing the letters already there.
 			x_possibilities = check_against_word_list(find_word_and_range(board[current_coordinate[0][0]],x_range[0])[0])
 			
-		#print x_possibilities
+			#print x_possibilities
 		#print current_coordinate
 		#print x_word,x_range, y_word,y_range
 			#Checking the words in the list of possibilities to see if they've
@@ -212,7 +212,7 @@ def solve_board_use_your_words(board):
 			#Again, this is where someone paying more attention would've scored
 			#the words.
 			sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][0])
-			#print best_words	
+			print best_words	
 
 			#If there's more than one possible word for this row that hasn't 
 			#been tried, add the best word to the row AND save this position 
@@ -224,7 +224,7 @@ def solve_board_use_your_words(board):
 
 			#If there's only one possible word that hasn't been tried in this row,
 			#just add that letter to the board.
-				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
 			elif len(best_words) == 1:
 				board_add_horiz_word(board, best_words[0], current_coordinate[0][0], x_range)
 			
@@ -232,7 +232,7 @@ def solve_board_use_your_words(board):
 			#If there are no possible words that have not been tried in this row, add this
 			#board to the list of previously-tried boards and return the board to 
 			#the last position in which there was a choice of more than one letter
-				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -241,7 +241,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				forward = False
 
-				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
 			
 			#Clear the best_words list again to prepare for the next time.
 			#Not sure this is necessary, but I've seen lists do weird things
@@ -276,7 +276,7 @@ def solve_board_use_your_words(board):
 			
 			#print strings such as the following have as their last element an indication of which 
 			#branch they come from, which is displayed for debugging.
-				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
 
 			#If there's only one possible word that hasn't been tried in this column, just add
 			#that word to the column.
@@ -288,7 +288,7 @@ def solve_board_use_your_words(board):
 			#to the last position in which there was a choice of more than one word.
 			#AND sets forward to False so we don't increment the coordinate list at 
 			#the end of the loop.
-				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -296,7 +296,7 @@ def solve_board_use_your_words(board):
 				through_else += 1
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 
-				#print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
 			
 
 			#This is the beginning of filling in the horizontal word. First we 
@@ -526,8 +526,9 @@ def build_word_lists_by_length(word_list):
 #--------------------experimental function area--------------------------
 
 def sort_best_horiz_words_by_score(best_words, board, x_range, y):
-	"""supposed to filter and sort the best_words list in place"""
+	"""filters and sorts the best_words list in place"""
 	words = []
+	#print best_words
 	for word in best_words:
 		#print 'word: ', word, 'score: ', test_add_horiz_word(x_range,y,word,board)
 		words.append([test_add_horiz_word(x_range,y,word,board),word])
