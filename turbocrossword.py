@@ -95,7 +95,8 @@ def solve_board_use_your_words(board):
 			#infeasible to expect to find better choices if the first ones don't work. However, by
 			#forcing the program to fill in ALL the highly-connected nodes first, I hope that it will
 			#miniimize the number of letters per crash. Anyway, that should go here.
-			sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][1])
+			#sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][1])
+			best_words = test_vert_letters(y_range,current_coordinate[0][1],board,best_words)
 
 
 			#If there's more than one possible word for this column that hasn't been tried,
@@ -114,13 +115,13 @@ def solve_board_use_your_words(board):
 			#that word to the column.
 			elif len(best_words) == 1:
 				board_add_vert_word(board, best_words[0],current_coordinate[0][1],y_range)
+				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
 			
 			#If there are no possible words that have not been tried for this column, add this
 			#board to the list of previously-tried boards and return the board and current_coordinate
 			#to the last position in which there was a choice of more than one word.
 			#AND set forward to False so we don't increment the coordinate list at 
 			#the end of the loop.
-				print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
 			else:
 				solution_list_add(board, solution_list)
 				board, current_coordinate = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
@@ -150,7 +151,8 @@ def solve_board_use_your_words(board):
 
 			#Again, this is where someone paying more attention would've scored
 			#the words.	
-			sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][0])
+			#sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][0])
+			best_words = test_horiz_letters(x_range,current_coordinate[0][0],board,best_words)
 			
 
 			#If there's more than one possible word for this row that hasn't 
@@ -211,7 +213,8 @@ def solve_board_use_your_words(board):
 			#print best_words
 			#Again, this is where someone paying more attention would've scored
 			#the words.
-			sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][0])
+			best_words = test_horiz_letters(x_range,current_coordinate[0][0],board,best_words)
+			#sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][0])
 			print best_words	
 
 			#If there's more than one possible word for this row that hasn't 
@@ -265,7 +268,9 @@ def solve_board_use_your_words(board):
 			#Observant humans might notice at this point that the words haven't actually
 			#been scored yet. I bet I would've noticed that too, if I hadn't been rushing.
 			#Anyway, that should go here.
-			sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][1])
+			#sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][1])
+
+			best_words = test_vert_letters(y_range,current_coordinate[0][1],board,best_words)
 			#print best_words
 			#If there's more than one possible word for this column that hasn't been tried,
 			#add the best word to the column AND save this position in pos_list
@@ -485,7 +490,7 @@ def print_board(board):
 
 
 def find_word(column_or_row, start_pos):
-	"""returns the length and string of the word so far from a list representing the current column or row word = ''"""
+	"""returns the length and string of the word so far from a list representing the current column or row word"""
 	word = ''
 	for x in xrange(len(column_or_row)):
 		if column_or_row[x] == '#' and x < start_pos:
@@ -530,12 +535,12 @@ def sort_best_horiz_words_by_score(best_words, board, x_range, y):
 	words = []
 	#print best_words
 	for word in best_words:
-		#print 'word: ', word, 'score: ', test_add_horiz_word(x_range,y,word,board)
+		print 'word: ', word, 'score: ', test_add_horiz_word(x_range,y,word,board)
 		words.append([test_add_horiz_word(x_range,y,word,board),word])
 		if words[-1][0] == 0:
 			words.pop()
 	words.sort(reverse=True)
-	#print words
+	print words
 	del best_words[:]
 	for x in words:
 		best_words.append(x[1])
@@ -567,6 +572,63 @@ def test_add_horiz_word(x_range,y, word, board):
 		to_score.append(find_word_and_range(test_word,y)[0])
 	#print words
 	return score_word_list(to_score)
+
+def test_horiz_letters(x_range,y,board,best_words):
+	list_of_letters_dicts = []
+	board_copy = (get_board_copy(board))
+	word_list_in_order  = []
+	to_return = []
+	for space in xrange(x_range[0],x_range[1]+1):
+		new_dict = {}
+		for letter in 'abcdefghijklmnopqrstuvwxyz'.upper():
+			board_copy[y][space] = letter
+			new_dict[letter] = len(check_against_word_list(find_word_and_range(get_column(board_copy,x_range[0]),y)[0]))
+		list_of_letters_dicts.append(new_dict)
+	for word in best_words:
+		word_score = 0
+		#print word
+		for letter in xrange(len(word)):
+			#print letter, list_of_letters_dicts[letter]
+			letter_score = list_of_letters_dicts[letter][word[letter]]
+			if letter_score == 0:
+				word_score = 0
+				break
+			word_score += list_of_letters_dicts[letter][word[letter]]
+		word_list_in_order.append([word_score,word])
+	word_list_in_order.sort(reverse=True)
+	for elem in word_list_in_order:
+		if elem[0] != 0:
+			to_return.append(elem[1])
+	return to_return
+
+def test_vert_letters(y_range,x,board,best_words):
+	list_of_letters_dicts = []
+	board_copy = (get_board_copy(board))
+	word_list_in_order  = []
+	to_return = []
+	for space in xrange(y_range[0],y_range[1]+1):
+		new_dict = {}
+		for letter in 'abcdefghijklmnopqrstuvwxyz'.upper():
+			board_copy[space][x] = letter
+			new_dict[letter] = len(check_against_word_list(find_word_and_range(board_copy[space],x)[0]))
+		list_of_letters_dicts.append(new_dict)
+	for word in best_words:
+		word_score = 0
+		#print word
+		for letter in xrange(len(word)):
+			letter_score = list_of_letters_dicts[letter][word[letter]]
+			if letter_score == 0:
+				word_score = 0
+				break
+			#print letter, list_of_letters_dicts[letter]
+			word_score += list_of_letters_dicts[letter][word[letter]]
+		word_list_in_order.append([word_score,word])
+	word_list_in_order.sort(reverse=True)
+	for elem in word_list_in_order:
+		if elem[0] != 0:
+			to_return.append(elem[1])
+	return to_return
+
 
 
 def test_add_vert_word(y_range,x, word, board):
@@ -608,6 +670,8 @@ def score_word_list(word_list):
 			return 0
 		score += pos_words
 	return score
+
+
 
 #----------------global variable declarations-----------------------
 
@@ -656,8 +720,8 @@ for total in WORDS_PER_LENGTH:
 
 #several test boards. the board currently named BOARD is the board used
 
-BOARDO = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
-BOARD = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
+BOARD = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
+BOARDO = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
 
 BOARDO = [[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]
 
