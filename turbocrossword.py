@@ -215,7 +215,7 @@ def solve_board_use_your_words(board):
 			#the words.
 			best_words = test_horiz_letters(x_range,current_coordinate[0][0],board,best_words)
 			#sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][0])
-			print best_words	
+			#print best_words	
 
 			#If there's more than one possible word for this row that hasn't 
 			#been tried, add the best word to the row AND save this position 
@@ -540,7 +540,7 @@ def sort_best_horiz_words_by_score(best_words, board, x_range, y):
 		if words[-1][0] == 0:
 			words.pop()
 	words.sort(reverse=True)
-	print words
+	#print words
 	del best_words[:]
 	for x in words:
 		best_words.append(x[1])
@@ -585,16 +585,17 @@ def test_horiz_letters(x_range,y,board,best_words):
 			new_dict[letter] = len(check_against_word_list(find_word_and_range(get_column(board_copy,x_range[0]),y)[0]))
 		list_of_letters_dicts.append(new_dict)
 	for word in best_words:
-		word_score = 0
+		word_score = len(best_words)
 		#print word
 		for letter in xrange(len(word)):
 			#print letter, list_of_letters_dicts[letter]
 			letter_score = list_of_letters_dicts[letter][word[letter]]
-			if letter_score == 0:
-				word_score = 0
-				break
-			word_score += list_of_letters_dicts[letter][word[letter]]
+			#print 'word: ',word,'letter score: ',letter_score,'letter: ',letter
+			if letter_score < word_score:
+				word_score = letter_score
 		word_list_in_order.append([word_score,word])
+		#print 'word: ',word,'word score: ',word_score#,'letter: ',letter
+	#print word_list_in_order
 	word_list_in_order.sort(reverse=True)
 	for elem in word_list_in_order:
 		if elem[0] != 0:
@@ -613,17 +614,15 @@ def test_vert_letters(y_range,x,board,best_words):
 			new_dict[letter] = len(check_against_word_list(find_word_and_range(board_copy[space],x)[0]))
 		list_of_letters_dicts.append(new_dict)
 	for word in best_words:
-		word_score = 0
+		word_score = len(best_words)
 		#print word
 		for letter in xrange(len(word)):
 			letter_score = list_of_letters_dicts[letter][word[letter]]
-			if letter_score == 0:
-				word_score = 0
-				break
-			#print letter, list_of_letters_dicts[letter]
-			word_score += list_of_letters_dicts[letter][word[letter]]
+			if letter_score < word_score:
+				word_score = letter_score
 		word_list_in_order.append([word_score,word])
 	word_list_in_order.sort(reverse=True)
+	print word_list_in_order
 	for elem in word_list_in_order:
 		if elem[0] != 0:
 			to_return.append(elem[1])
