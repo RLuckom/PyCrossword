@@ -38,8 +38,7 @@ quickly than the previous algorithm.
 
 def solve_board_use_your_words(board):
 	nodes_in_order = find_supernodes(board) #order in which to try to complete coords
-	solution_list = []  #list to keep hashes of previously-tried boards
-	pos_list = []   #list of boards representing positions where there was a choice of adding several words
+	pos_list = []   #list of boards representing positions where there was a choice of adding several words, as well as the specific coordinate that was being solved(including whether it was working on the vertical or horizontal word) and the list of words left to try
 	ctr = 0 #number of times through the loop
 	through_else = 0 #number of times a word has not been found. Used only for debugging
 	test_output_frequency = 10 #how often to print testing output
@@ -49,9 +48,9 @@ def solve_board_use_your_words(board):
 	while not board_solved(board):
 		
 		#forward is what determines whether to advance to the next coordinate upon completion.
-		#If we haven't found a word, we're going to move to an older coordinate as part of the
-		#process of resetting the board, and we don't want to then advance one coordinate forward
-		#when we get to the end of the loop, so forward gets set to False if we reset.
+		#the loop doesn't tightly control the order in which horizontal or vertical words 
+		#get filled in, so forward is presumed to be False unless a test shows that the current
+		#coordinate has valid horiz and vert words already
 		forward = False
 
 
@@ -62,56 +61,51 @@ def solve_board_use_your_words(board):
 
 		#deciding whether to print output
 		if ctr%test_output_frequency == 0:
-			print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate,'prime')
+			print_tests_new(board, ctr,forward,through_else,current_coordinate,'prime')
 
 
 		#Each coordinate is in the form ((x-coord,y-coord), v-or-h) where the v or h indicates
 		#whether to start with the vertical or horizontal word based on which is longer. I've written out
-		#two full branches to handle both cases. That might have been a terrible idea, as I have to remember to 
-		#fix bugs in both places.
+		#separate branches to fill in horizontal and vertical words, because
+		#with vertical words the columns have to be arranged into lists.
 		if current_coordinate[1] =='v':
 
 
-			#Initializing an empty list to hold the words that have not been tried
+			#if we're encountering this position for the first time, the best_words list will be empty
+			#but if we're returning to this position we'll have the best_words list we generated last
+			#time, with the next word to use at the end. This test determines whether to find the best
+			#words for this position
 			if best_words == []:
 			
 
-			#this gets a list of words that could be added to the current column without disturbing
-			#any letters there already.
+				#this gets a list of words that could be added to the current column without disturbing
+				#any letters there already.
 				y_possibilities = check_against_word_list(find_word_and_range(get_column(board, current_coordinate[0][1]),y_range[0])[0])
 				
 
-			#looks through the possible words and adds those that haven't been tried 
-			#to best_words
+				#This is the current source of issues. I need to debug the functions meant to score 
+				#the best_words list. The plan is to add the words to a
+				#board and take the scores of the resulting several vertical/horizontal words
+				#This has the disadvantage that, along with the complexity, it locks in the most 
+				#important words on the board high up in the tree, where for large boards it will be
+				#infeasible to expect to find better choices if the first ones don't work. However, by
+				#forcing the program to fill in ALL the highly-connected nodes first, I hope that it will
+				#minimize the number of letters per crash
 
-
-			#This is the current source of issues. I need to debug the functions meant to sort 
-			#the best_words list in place based on a scoring system. The plan is to add the words to a
-			#board and take the scores of the resulting several vertical/horizontal words
-			#This has the disadvantage that, along with the complexity, it locks in the most 
-			#important words on the board high up in the tree, where for large boards it will be
-			#infeasible to expect to find better choices if the first ones don't work. However, by
-			#forcing the program to fill in ALL the highly-connected nodes first, I hope that it will
-			#miniimize the number of letters per crash. Anyway, that should go here.
-			#sort_best_vert_words_by_score(best_words,board,y_range,current_coordinate[0][1])
 				best_words = test_vert_letters(y_range,current_coordinate[0][1],board,y_possibilities)
-			#print best_words
 			#If there's more than one possible word for this column that hasn't been tried,
-			#add the best word to the column AND save this position in pos_list
+			#add the best word to the column AND save this position and best_words list in pos_list
 			#so we can come back to it if we hit a dead end
 			if len(best_words) > 1:
 				word_to_add = best_words.pop()
 				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate,best_words)
-				#print word_to_add,print_board(board), current_coordinate
 				board_add_vert_word(board, word_to_add,current_coordinate[0][1],y_range)
 				current_coordinate[1] = 'h'
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 				del best_words[:]
-
-	
-			#print strings such as the following have as their last element an indication of which 
-			#branch they come from, which is displayed for debugging.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len > 1')
+				#print strings such as the following have as their last element an indication of which 
+				#branch they come from, which is displayed for debugging.
+				#print_tests_new(board, ctr,forward,through_else,current_coordinate, 'y len > 1')
 
 			#If there's only one possible word that hasn't been tried in this column, just add
 			#that word to the column.
@@ -119,49 +113,55 @@ def solve_board_use_your_words(board):
 				word_to_add = best_words.pop()
 				board_add_vert_word(board, word_to_add,current_coordinate[0][1],y_range)
 				current_coordinate[1] = 'h'
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y len == 1')
+				#print_tests_new(board, ctr,forward,through_else,current_coordinate, 'y len == 1')
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 				del best_words[:]
 			
-			#If there are no possible words that have not been tried for this column, add this
-			#board to the list of previously-tried boards and return the board and current_coordinate
-			#to the last position in which there was a choice of more than one word.
-			#AND set forward to False so we don't increment the coordinate list at 
-			#the end of the loop.
+			#If there are no possible words that have not been tried for this column, return the board 
+			#and current_coordinate to the last position in which there was a choice of more than one 
+			#word, and bring back the best_words list we had at that time.
 			else:
-				solution_list_add(board, solution_list)
-				#board, current_coordinate, best_words = return_to_last_good_pos_and_coords(board,pos_list,solution_list)
 				board, current_coordinate, best_words = pos_list.pop()
-				#print 'pos: ',print_board(board), current_coordinate, best_words
 				through_else += 1
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
-
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'y-else')
+				#print_tests_new(board, ctr,forward,through_else,current_coordinate, 'y-else')
 			
 
-			#This is the beginning of filling in the horizontal word. First we 
-			#empty out the best_words list so we can use it again.
+		#check to see if the coordinate is all filled out. If so, we set forward to True.
+		#Note that this doesn't prevent it filling in the horiz word--but because that 
+		#is already a valid word, the function will just replace it with itself
+		#This is an opportunity for some optimization, but shouldn't introduce problems.
 		if is_filled(board,x_word,y_word):
 			forward = True
+		
+		
+		#This is the beginning of filling in the horizontal word.
 		if current_coordinate[1] == 'h':
+			#if we're encountering this position for the first time, the best_words list will be empty
+			#but if we're returning to this position we'll have the best_words list we generated last
+			#time, with the next word to use at the end. This test determines whether to find the best
+			#words for this position
 			if best_words == []:
 
-			#finding words that could be placed in the current row without 
-			#disturbing the letters already there.
+				#finding words that could be placed in the current row without 
+				#disturbing the letters already there.
 				x_possibilities = check_against_word_list(find_word_and_range(board[current_coordinate[0][0]],x_range[0])[0])
-			
-			#Checking the words in the list of possibilities to see if they've
-			#already been used.
-
-			#print best_words
-			#Again, this is where someone paying more attention would've scored
-			#the words.
+		
+		
+				#This is the current source of issues. I need to debug the functions meant to score 
+				#the best_words list. The plan is to add the words to a
+				#board and take the scores of the resulting several vertical/horizontal words
+				#This has the disadvantage that, along with the complexity, it locks in the most 
+				#important words on the board high up in the tree, where for large boards it will be
+				#infeasible to expect to find better choices if the first ones don't work. However, by
+				#forcing the program to fill in ALL the highly-connected nodes first, I hope that it will
+				#minimize the number of letters per crash
 				best_words = test_horiz_letters(x_range,current_coordinate[0][0],board,x_possibilities)
-			#sort_best_horiz_words_by_score(best_words,board,x_range,current_coordinate[0][0])
-			#print best_words	
-			#If there's more than one possible word for this row that hasn't 
-			#been tried, add the best word to the row AND save this position 
-			#in pos_list so we can come back to it if we hit a dead end
+			
+			
+			#If there's more than one possible word for this row that hasn't been tried,
+			#add the best word to the column AND save this position and best_words list in pos_list
+			#so we can come back to it if we hit a dead end
 			if len(best_words) > 1:
 				word_to_add = best_words.pop()
 				add_board_and_coords_to_pos_list(board,pos_list,current_coordinate,best_words)
@@ -169,40 +169,33 @@ def solve_board_use_your_words(board):
 				current_coordinate[1] = 'v'
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 				del best_words[:]
+				#print_tests_new(board, ctr,forward,through_else,current_coordinate, 'yx > 1')
 
 			#If there's only one possible word that hasn't been tried in this row,
 			#just add that letter to the board.
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx > 1')
 			elif len(best_words) == 1:
 				word_to_add = best_words.pop()
 				board_add_horiz_word(board, word_to_add, current_coordinate[0][0], x_range)
 				current_coordinate[1] = 'v'
 				del best_words[:]
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
+				#print_tests_new(board, ctr,forward,through_else,current_coordinate, 'yx =1')
 			
-			#If there are no possible words that have not been tried in this row, add this
-			#board to the list of previously-tried boards and return the board to 
-			#the last position in which there was a choice of more than one letter
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx =1')
+			#If there are no possible words that have not been tried for this row, return the board 
+			#and current_coordinate to the last position in which there was a choice of more than one 
+			#word, and bring back the best_words list we had at that time.
 			else:
-				solution_list_add(board, solution_list)
 				board, current_coordinate, best_words = pos_list.pop()
-				#print 'pos: ',print_board(board), current_coordinate, best_words
-#return_to_last_good_pos_and_coords(board,pos_list,solution_list)
-
 				x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 				through_else += 1
 
-			#	print_tests_new(board, solution_list,ctr,forward,through_else,current_coordinate, 'yx else')
-			
-			#Clear the best_words list again to prepare for the next time.
-			#Not sure this is necessary, but I've seen lists do weird things
-			#in loops.
+		#check to see if the coordinate is completed
 		if is_filled(board,x_word,y_word):
 			forward = True
 
 		
 		ctr += 1
+		#If somewhere in the last loop we completed the coordinate, we need to move to the next one
 		if forward == True:
 			current_coordinate = nodes_in_order[nodes_in_order.index(current_coordinate)+1] 
 			x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
@@ -232,14 +225,12 @@ def find_supernodes(board):
 		coordinate_values[element] = [coordinate_values[element][1],coordinate_values[element][2]]
 	return coordinate_values
 
-
 def board_solved(board):
-	"""checks to see if the board is solved."""
+	"""checks to see if the board has no empty spaces. Does not validate words."""
 	for row in board:
 		if ' ' in row:
 			return False
 	return True
-
 
 def coord_to_words_and_ranges(board, coord):
 	"""Takes a board and coord and returns x_word, x_range, y_word, y_range"""
@@ -248,7 +239,7 @@ def coord_to_words_and_ranges(board, coord):
 	return x_word,x_range,y_word,y_range
 
 
-def print_tests_new(board, solution_list, x,forward,through_else, current_coordinates,sent_by):
+def print_tests_new(board, x,forward,through_else, current_coordinates,sent_by):
 	"""prints args for debugging"""
 #	if board[4][3]=='A':
 	print sent_by
@@ -304,20 +295,6 @@ def get_column(board, column_number):
 	return column
 
 
-def hash_board_add_vert_word(board,word,column_number,range_within_column):
-	"""adds a vertical word to a copy of the board using the 1st element of coord_ranges"""
-	board_copy = get_board_copy(board)
-	board_add_vert_word(board_copy, word,column_number,range_within_column)
-	return hash_board(board_copy)
-
-
-def hash_board_add_horiz_word(board,word,row_number,range_within_row):
-	"""this function adds a horizontal word to a copy of the board using the 0th element of coord_ranges"""
-	board_copy = get_board_copy(board)
-	board_add_horiz_word(board_copy, word,row_number,range_within_row)
-	return hash_board(board_copy)
-
-
 def add_board_and_coords_to_pos_list(board,pos_list,current_coordinate,best_words):
 	"""Adds the current board to the list of previous boards for which there was a choice of more than one letter."""
 	board_copy = get_board_copy(board)
@@ -347,31 +324,7 @@ def board_add_vert_word(board, word,x,y_range):
 		indx += 1
 
 
-def solution_list_add(board, solution_list):
-	"""Adds the board to solution_list, which tracks boards that have been tried"""
-	solution_list.append(hash_board(board))
-
-
-def return_to_last_good_pos_and_coords(board,pos_list,solution_list):
-	"""returns the (board,current_coordinate) from the last position in which there was a choice of more than one word."""
-	for pos in reversed(pos_list):
-		if hash_board(pos[0]) not in solution_list:
-			return pos
-
-
 #---------------functions to navigate & comprehend the board-------------
-
-
-
-def hash_board(board):
-	"""returns a string representation of the board. Used for keeping track of boards that have been tried."""
-	hsh = ''
-	for row in board:
-		for letter in row:
-			hsh += (str(letter))
-	return hsh
-
-
 
 def print_board(board):
 	"""prints board to stdout"""
@@ -382,7 +335,6 @@ def print_board(board):
 			rowstring += " '"+str(item)+"' "
 		rowstring += ']\n'
 		print rowstring
-
 
 
 def find_word(column_or_row, start_pos):
@@ -424,40 +376,11 @@ def build_word_lists_by_length(word_list):
 		word_lists_by_length.append(get_words_of_length(x,word_list))
 	return word_lists_by_length
 
-#--------------------experimental function area--------------------------
-
-def sort_best_horiz_words_by_score(best_words, board, x_range, y):
-	"""filters and sorts the best_words list in place"""
-	words = []
-	#print best_words
-	for word in best_words:
-		#print 'word: ', word, 'score: ', test_add_horiz_word(x_range,y,word,board)
-		words.append([test_add_horiz_word(x_range,y,word,board),word])
-		if words[-1][0] == 0:
-			words.pop()
-	words.sort(reverse=True)
-	#print words
-	del best_words[:]
-	for x in words:
-		best_words.append(x[1])
-	#print best_words
+#--------------------------scoring functions----------------------------
 
 def is_filled(board, x_word, y_word):
+	"""checks to see if the vert and horiz words associated with a coord are filled already"""
 	return False if x_word not in WORD_LISTS_BY_LENGTH[len(x_word)-1] or y_word not in WORD_LISTS_BY_LENGTH[len(y_word)-1] else True
-
-
-
-def sort_best_vert_words_by_score(best_words, board, y_range, x):
-	"""filters and sorts the best_words list in place"""
-	words = []	
-	for word in best_words:
-		words.append([test_add_vert_word(y_range,x,word,board),word])
-		if words[-1][0] == 0:
-			words.pop()
-	words.sort(reverse=True)
-	del best_words[:]
-	for x in words:
-		best_words.append(x[1])
 
 
 def test_add_horiz_word(x_range,y, word, board):
@@ -474,6 +397,7 @@ def test_add_horiz_word(x_range,y, word, board):
 	return score_word_list(to_score)
 
 def test_horiz_letters(x_range,y,board,best_words):
+	"""likely a source of problems. Takes a board and target word-space, and identifies and ranks the words that could go there based on how many intersecting words they would leave open. Returns a list of those words with the best word last, for use with list.pop()"""
 	list_of_letters_dicts = []
 	board_copy = (get_board_copy(board))
 	word_list_in_order  = []
@@ -504,6 +428,7 @@ def test_horiz_letters(x_range,y,board,best_words):
 	return to_return
 
 def test_vert_letters(y_range,x,board,best_words):
+	"""likely a source of problems. Takes a board and target word-space, and identifies and ranks the words that could go there based on how many intersecting words they would leave open. Returns a list of those words with the best word last, for use with list.pop()"""
 	list_of_letters_dicts = []
 	board_copy = (get_board_copy(board))
 	word_list_in_order  = []
@@ -585,42 +510,6 @@ def score_word_list(word_list):
 WORD_LISTS_BY_LENGTH = build_word_lists_by_length(filter.filter_words(filter.file_to_list()))
 del WORD_LISTS_BY_LENGTH[0][:] #the word list initially includes all single letters as words
 WORD_LISTS_BY_LENGTH[0] = ['A','I','O']#replacing with just valid single-letter words.
-
-
-#dict with entries in the form 
-#[beginning_of_word_str, target_word_length]:{letters a-z:scores of letters}
-#scores of letters should represent the usefulness of adding those letters to
-#beginning_of_word_string when trying to end up with a word of target_word_length
-
-WORDS_SHORTCUT_DICT = {}
-
-
-#dict with entries in the form
-#[vert_beginning_word_str, horiz_beginning_word_str, vert_target_word_length, horiz_target_word_length]:
-#{letters_a-z:scores_of_letters}
-#similar to WORDS_SHORTCUT_DICT, but keeps track of combinations of across and vertical
-#strings/word lengths
-
-MOVES_LIST_DICT = {}
-
-
-#collecting some info about the distribution of words by length to make decisions
-#about priority later on.
-
-WORD_TOTAL = 0
-WORDS_PER_LENGTH = []
-for lst in WORD_LISTS_BY_LENGTH:
-	WORDS_PER_LENGTH.append(len(lst))
-	WORD_TOTAL += len(lst)
-
-
-#calculating the reciprocal of words_of_length_x/total_words. So if 10%
-#of total words are 7 letters, and 30% are 5 letters, letters that contribute
-#to 7-letter words are scored higher than letters that contribute to 5-letter words.
-
-RARITY_FACTOR = []
-for total in WORDS_PER_LENGTH:
-	RARITY_FACTOR.append(1-(float(total)/float(WORD_TOTAL)))
 
 #several test boards. the board currently named BOARD is the board used
 
