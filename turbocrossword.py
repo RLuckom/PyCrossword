@@ -38,10 +38,15 @@ quickly than the previous algorithm.
 
 def solve_board_use_your_words(board):
 	nodes_in_order = find_supernodes(board) #order in which to try to complete coords
-	pos_list = []   #list of boards representing positions where there was a choice of adding several words, as well as the specific coordinate that was being solved(including whether it was working on the vertical or horizontal word) and the list of words left to try
+	#nodes_in_order = get_nodes_in_order(board)
+	#list of boards representing positions where there was a choice of adding several words, 
+	#as well as the specific coordinate that was being solved(including whether it was working 
+	#on the vertical or horizontal word) and the list of words left to try
+	pos_list = []  
+	
 	ctr = 0 #number of times through the loop
 	through_else = 0 #number of times a word has not been found. Used only for debugging
-	test_output_frequency = 10 #how often to print testing output
+	test_output_frequency = 1 #how often to print testing output
 	current_coordinate = nodes_in_order[0] #this gets managed inside the while loop later on
 	best_words = []
 	#Main loop
@@ -197,7 +202,16 @@ def solve_board_use_your_words(board):
 		ctr += 1
 		#If somewhere in the last loop we completed the coordinate, we need to move to the next one
 		if forward == True:
-			current_coordinate = nodes_in_order[nodes_in_order.index(current_coordinate)+1] 
+			try:
+				current_coordinate = nodes_in_order[nodes_in_order.index(current_coordinate)+1] 
+			except ValueError:
+				if current_coordinate[1] == 'h':
+					current_coordinate[1] = 'v'
+					print 'first',current_coordinate
+				elif current_coordinate[1] == 'v':
+					current_coordinate[1] ='h'
+					print 'second',current_coordinate
+				current_coordinate = nodes_in_order[nodes_in_order.index(current_coordinate)+1] 
 			x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 	print_board(board)
 
@@ -224,6 +238,16 @@ def find_supernodes(board):
 	for element in xrange(len(coordinate_values)):
 		coordinate_values[element] = [coordinate_values[element][1],coordinate_values[element][2]]
 	return coordinate_values
+
+
+def get_nodes_in_order(board):
+	nodes = []
+	for row in xrange(len(board)):
+		for letter in xrange(len(board[row])):
+			if board[row][letter] != '#':
+				nodes.append([(row,letter),'h'])
+				nodes.append([(row,letter),'v'])
+	return nodes
 
 def board_solved(board):
 	"""checks to see if the board has no empty spaces. Does not validate words."""
@@ -406,7 +430,7 @@ def test_horiz_letters(x_range,y,board,best_words):
 		new_dict = {}
 		for letter in 'abcdefghijklmnopqrstuvwxyz'.upper():
 			board_copy[y][space] = letter
-			new_dict[letter] = len(check_against_word_list(find_word_and_range(get_column(board_copy,x_range[0]),y)[0]))
+			new_dict[letter] = len(check_against_word_list(find_word_and_range(get_column(board_copy,space),y)[0]))
 		list_of_letters_dicts.append(new_dict)
 	for word in best_words:
 		word_score = 0
@@ -512,7 +536,12 @@ del WORD_LISTS_BY_LENGTH[0][:] #the word list initially includes all single lett
 WORD_LISTS_BY_LENGTH[0] = ['A','I','O']#replacing with just valid single-letter words.
 
 #several test boards. the board currently named BOARD is the board used
+words = 0
+for word_list in WORD_LISTS_BY_LENGTH:
+	words += len(word_list)
 
+print "I have ",words,"words."
+print "I have ",len(WORD_LISTS_BY_LENGTH[7]),"eight-letter words."
 BOARD = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
 BOARDO = [[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' '],['#',' ',' ',' ','#',' '],[' ','#',' ',' ',' ','#'],[' ',' ',' ','#',' ',' '],[' ',' ','#',' ',' ',' ']]
 
