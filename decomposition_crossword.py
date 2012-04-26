@@ -303,7 +303,7 @@ def solve_intersections(board,nodes_to_fill):
 					try:
 						board, current_coordinate, best_words = pos_list.pop()
 					except IndexError:
-						return False
+						return board
 					x_word,x_range,y_word,y_range = coord_to_words_and_ranges(board, current_coordinate[0])
 					forward = False
 					through_else += 1
@@ -412,11 +412,15 @@ def board_add_vert_word(board, word,x,y_range):
 
 def get_coord_list_from_row_or_column(row_or_column, board):
 	"""takes a board and a row_or_column identifier tuple in the format that comes from find_row_and_column_crossings and returns a list of coords that can be solved in order by solve_intersections to prepare the board to be split"""
+	print 'row_or: ',row_or_column
 	coords = []
 	to_return = []
 	position_of_constant_coord = 0
 	position_of_changing_coord = 1
-	split_row = board[row_or_column[0]]
+	try:
+		split_row = board[row_or_column[0]]
+	except IndexError:
+		pass
 	if row_or_column[1]=='h':
 		position_of_constant_coord = 1
 		position_of_changing_coord = 0
@@ -669,7 +673,8 @@ def score_word_list(word_list):
 
 if __name__ == '__main__':
 	#BOARD = [['S','C',' ','B','S'],['T','O',' ','A','L'],[' ',' ',' ',' ',' '],['R','O',' ','E','D'],['T','R',' ','S','S']]
-	BOARD = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
+	BOARDO = [[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ']]
+	BOARD = [[' ',' ',' ',' ','#','#',' ',' ',' ','#','#',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' ',' ',' '],['#','#','#',' ',' ',' ','#','#','#',' ',' ',' ',' ','#','#'],['#',' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' ','#'],[' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' '],['#',' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' ','#'],['#','#',' ',' ',' ',' ','#','#','#',' ',' ',' ','#','#','#'],[' ',' ',' ','#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ',' '],[' ',' ',' ',' ','#','#',' ',' ',' ','#','#',' ',' ',' ',' ']]
 	WORD_LISTS_BY_LENGTH = build_word_lists_by_length(filter.filter_words(filter.file_to_list()))
 	del WORD_LISTS_BY_LENGTH[0][:] #the word list initially includes all single letters as words
 	WORD_LISTS_BY_LENGTH[0] = ['A','I','O']#replacing with just valid single-letter words.
